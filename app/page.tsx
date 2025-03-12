@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import { Sidebar } from "@/components/Sidebar";
 import { motion } from "framer-motion";
 import useStore from "@/lib/store";
+import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
   const isMobile = useIsMobile();
@@ -20,13 +21,91 @@ export default function Home() {
     setModelResponses,
   } = useStore();
 
-  const handleSettingsSave = (newSettings: typeof settings) => {
-    setSettings(newSettings);
-  };
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const getCameraStream = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "environment",
+          },
+        });
+        setStream(stream);
+
+        const video = document.createElement("video");
+        video.srcObject = stream;
+        video.onloadedmetadata = () => {
+          video.play();
+          const renderFrame = () => {
+            if (!video.paused && !video.ended && canvasRef.current) {
+              const ctx = canvasRef.current.getContext("2d");
+              if (ctx) {
+                const canvasWidth = canvasRef.current.width;
+                const canvasHeight = canvasRef.current.height;
+                const videoWidth = video.videoWidth;
+                const videoHeight = video.videoHeight;
+
+                const canvasAspectRatio = canvasWidth / canvasHeight;
+                const videoAspectRatio = videoWidth / videoHeight;
+
+                let sourceX = 0;
+                let sourceY = 0;
+                let sourceWidth = videoWidth;
+                let sourceHeight = videoHeight;
+                let destX = 0;
+                let destY = 0;
+                let destWidth = canvasWidth;
+                let destHeight = canvasHeight;
+
+                if (canvasAspectRatio > videoAspectRatio) {
+                  // Canvas is wider than the video, so crop the top and bottom
+                  sourceHeight = videoWidth / canvasAspectRatio;
+                  sourceY = (videoHeight - sourceHeight) / 2;
+                } else {
+                  // Canvas is taller than the video, so crop the left and right
+                  sourceWidth = videoHeight * canvasAspectRatio;
+                  sourceX = (videoWidth - sourceWidth) / 2;
+                }
+
+                ctx.drawImage(
+                  video,
+                  sourceX,
+                  sourceY,
+                  sourceWidth,
+                  sourceHeight,
+                  destX,
+                  destY,
+                  destWidth,
+                  destHeight
+                );
+              }
+            }
+            requestAnimationFrame(renderFrame);
+          };
+          renderFrame();
+        };
+      } catch (err: any) {
+        setError(err.message);
+      }
+    };
+
+    if (isSettingsConfigured) {
+      getCameraStream();
+    }
+
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [isSettingsConfigured]);
 
   return (
     <main className="flex flex-col min-h-screen w-full bg-background">
-      <Sidebar onSave={handleSettingsSave} />
+      <Sidebar />
       <div className="px-6 lg:px-16 pt-12 pb-8">
         <Header />
       </div>
@@ -37,14 +116,22 @@ export default function Home() {
       >
         {/* Camera Feed Container */}
         <motion.div
-          className="relative w-full lg:w-3/5 mx-auto aspect-[21/9] bg-muted rounded-lg overflow-hidden mb-6"
+          className="relative w-full lg:w-3/5 mx-auto aspect-video bg-muted rounded-lg overflow-hidden mb-6"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
         >
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Camera className="w-16 h-16 text-muted-foreground" />
-          </div>
+          {error ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-red-500/20">
+              <p className="text-red-500 text-sm">{error}</p>
+            </div>
+          ) : stream ? (
+            <canvas ref={canvasRef} className="w-full h-full" />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Camera className="w-16 h-16 text-muted-foreground" />
+            </div>
+          )}
 
           {/* Status Overlay */}
           <motion.div
