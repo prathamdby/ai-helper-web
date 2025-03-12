@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Space, Camera, X, KeySquare } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { Sidebar } from "@/components/Sidebar";
 import { motion } from "framer-motion";
+import { useState } from "react";
 
 interface ModelResponse {
   name: string;
@@ -16,11 +18,37 @@ interface ModelResponse {
 
 export default function Home() {
   const isMobile = useIsMobile();
-  const modelResponses: ModelResponse[] = [];
+  const [settings, setSettings] = useState<{
+    geminiKey: string;
+    openrouterKey: string;
+    selectedModels: string[];
+  }>({
+    geminiKey: "",
+    openrouterKey: "",
+    selectedModels: [],
+  });
+  const [modelResponses, setModelResponses] = useState<ModelResponse[]>([]);
+  const [isSettingsConfigured, setIsSettingsConfigured] = useState(false);
+
+  const checkSettings = () => {
+    const isConfigured = !!(
+      settings.geminiKey &&
+      settings.openrouterKey &&
+      settings.selectedModels.length > 0
+    );
+    setIsSettingsConfigured(isConfigured);
+    return isConfigured;
+  };
+
+  const handleSettingsSave = (newSettings: typeof settings) => {
+    setSettings(newSettings);
+    checkSettings();
+  };
 
   return (
     <main className="flex flex-col min-h-screen w-full bg-background">
-      <div className="px-6 lg:px-16 py-8">
+      <Sidebar onSave={handleSettingsSave} />
+      <div className="px-6 lg:px-16 pt-12 pb-8">
         <Header />
       </div>
       <motion.div
@@ -47,7 +75,7 @@ export default function Home() {
             transition={{ delay: 0.2 }}
           >
             <div className="px-3 py-1.5 bg-yellow-500/20 text-yellow-500 rounded-md text-sm font-medium">
-              Ready
+              {isSettingsConfigured ? "Ready" : "Configure Settings"}
             </div>
           </motion.div>
 
@@ -87,7 +115,9 @@ export default function Home() {
           >
             <Card className="p-4">
               <p className="text-sm font-mono text-muted-foreground">
-                OCR: Waiting for capture...
+                {isSettingsConfigured
+                  ? "OCR: Waiting for capture..."
+                  : "OCR: Configure settings to start"}
               </p>
             </Card>
           </motion.div>
@@ -100,14 +130,16 @@ export default function Home() {
           >
             <Card className="p-4">
               <p className="text-sm font-medium mb-4">
-                Point your camera at a question and press SPACE to analyze
+                {isSettingsConfigured
+                  ? "Point your camera at a question and press SPACE to analyze"
+                  : "Click the settings icon in the top-right to configure API keys and models"}
               </p>
 
               {/* Dynamic Model Responses */}
               <div className="space-y-2">
-                {modelResponses.length === 0 ? (
+                {!isSettingsConfigured ? (
                   <p className="text-sm text-muted-foreground">
-                    No model responses yet...
+                    No models configured
                   </p>
                 ) : (
                   modelResponses.map((model, index) => (
@@ -133,8 +165,8 @@ export default function Home() {
 
       <Footer />
 
-      {/* Mobile Action Buttons */}
-      {isMobile && (
+      {/* Mobile Action Buttons - Only show when configured */}
+      {isMobile && isSettingsConfigured && (
         <motion.div
           className="fixed bottom-4 inset-x-6 grid grid-cols-2 gap-4"
           initial={{ opacity: 0, y: 20 }}
