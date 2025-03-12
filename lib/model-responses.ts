@@ -79,7 +79,15 @@ Your response must be clear and concise.`;
         }
       );
 
-      const answer = response.data.choices[0].message.content.trim();
+      const choices = response.data.choices;
+      if (!choices || choices.length === 0) {
+        return {
+          name: model,
+          status: "Error: No response from model",
+        };
+      }
+
+      const answer = choices[0].message.content.trim();
       if (validateAnswer(answer, !!options)) {
         const timeTaken = (Date.now() - startTime) / 1000;
         return {
