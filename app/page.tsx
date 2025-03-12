@@ -13,13 +13,7 @@ import { useEffect, useRef, useState } from "react";
 
 export default function Home() {
   const isMobile = useIsMobile();
-  const {
-    settings,
-    modelResponses,
-    isSettingsConfigured,
-    setSettings,
-    setModelResponses,
-  } = useStore();
+  const { modelResponses, isSettingsConfigured } = useStore();
 
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);

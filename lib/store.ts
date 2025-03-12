@@ -18,7 +18,6 @@ interface AppState {
   isSettingsConfigured: boolean;
   setSettings: (settings: Settings) => void;
   setModelResponses: (modelResponses: ModelResponse[]) => void;
-  checkSettings: () => void;
 }
 
 const useStore = create<AppState>((set) => ({
@@ -39,15 +38,6 @@ const useStore = create<AppState>((set) => ({
       return { settings, isSettingsConfigured };
     }),
   setModelResponses: (modelResponses) => set({ modelResponses }),
-  checkSettings: () =>
-    set((state) => {
-      const isSettingsConfigured = !!(
-        state.settings.geminiKey &&
-        state.settings.openrouterKey &&
-        state.settings.selectedModels.length > 0
-      );
-      return { isSettingsConfigured };
-    }),
 }));
 
 export default useStore;
