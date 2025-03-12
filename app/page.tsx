@@ -205,12 +205,11 @@ If no question is detected, return empty string.`,
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      e.preventDefault();
+      const keyActions = { Space: capture, KeyX: clear };
 
-      if (e.code === "Space") {
-        capture();
-      } else if (e.code === "KeyX") {
-        clear();
+      if (e.code in keyActions) {
+        e.preventDefault();
+        keyActions[e.code as keyof typeof keyActions]?.();
       }
     };
 
