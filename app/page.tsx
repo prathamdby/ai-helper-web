@@ -30,19 +30,19 @@ export default function Home() {
   const [modelResponses, setModelResponses] = useState<ModelResponse[]>([]);
   const [isSettingsConfigured, setIsSettingsConfigured] = useState(false);
 
-  const checkSettings = () => {
+  const handleSettingsSave = (newSettings: typeof settings) => {
+    setSettings(newSettings);
+    checkSettings(newSettings);
+  };
+
+  const checkSettings = (currentSettings: typeof settings) => {
     const isConfigured = !!(
-      settings.geminiKey &&
-      settings.openrouterKey &&
-      settings.selectedModels.length > 0
+      currentSettings.geminiKey &&
+      currentSettings.openrouterKey &&
+      currentSettings.selectedModels.length > 0
     );
     setIsSettingsConfigured(isConfigured);
     return isConfigured;
-  };
-
-  const handleSettingsSave = (newSettings: typeof settings) => {
-    setSettings(newSettings);
-    checkSettings();
   };
 
   return (
