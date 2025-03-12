@@ -8,41 +8,20 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Sidebar } from "@/components/Sidebar";
 import { motion } from "framer-motion";
-import { useState } from "react";
-
-interface ModelResponse {
-  name: string;
-  status: string;
-  timeTaken?: number;
-}
+import useStore from "@/lib/store";
 
 export default function Home() {
   const isMobile = useIsMobile();
-  const [settings, setSettings] = useState<{
-    geminiKey: string;
-    openrouterKey: string;
-    selectedModels: string[];
-  }>({
-    geminiKey: "",
-    openrouterKey: "",
-    selectedModels: [],
-  });
-  const [modelResponses, setModelResponses] = useState<ModelResponse[]>([]);
-  const [isSettingsConfigured, setIsSettingsConfigured] = useState(false);
+  const {
+    settings,
+    modelResponses,
+    isSettingsConfigured,
+    setSettings,
+    setModelResponses,
+  } = useStore();
 
   const handleSettingsSave = (newSettings: typeof settings) => {
     setSettings(newSettings);
-    checkSettings(newSettings);
-  };
-
-  const checkSettings = (currentSettings: typeof settings) => {
-    const isConfigured = !!(
-      currentSettings.geminiKey &&
-      currentSettings.openrouterKey &&
-      currentSettings.selectedModels.length > 0
-    );
-    setIsSettingsConfigured(isConfigured);
-    return isConfigured;
   };
 
   return (

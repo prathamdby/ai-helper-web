@@ -7,33 +7,15 @@ import { Label } from "./ui/label";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import useStore from "@/lib/store";
 
-interface SidebarProps {
-  onSave: (settings: {
-    geminiKey: string;
-    openrouterKey: string;
-    selectedModels: string[];
-  }) => void;
-}
-
-export function Sidebar({ onSave }: SidebarProps) {
+export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [geminiKey, setGeminiKey] = useState("");
-  const [openrouterKey, setOpenrouterKey] = useState("");
-  const [selectedModels, setSelectedModels] = useState<string[]>([]);
+  const { settings, setSettings } = useStore();
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-
-  const handleSave = () => {
-    onSave({
-      geminiKey,
-      openrouterKey,
-      selectedModels,
-    });
-    setIsOpen(false);
-  };
 
   // Close sidebar on Escape key press
   useEffect(() => {
@@ -119,8 +101,10 @@ export function Sidebar({ onSave }: SidebarProps) {
                 <Input
                   id="gemini"
                   placeholder="Enter your Gemini API key"
-                  value={geminiKey}
-                  onChange={(e) => setGeminiKey(e.target.value)}
+                  value={settings.geminiKey}
+                  onChange={(e) =>
+                    setSettings({ ...settings, geminiKey: e.target.value })
+                  }
                   className="border-white/10 bg-white/5 focus:border-white/20"
                 />
               </div>
@@ -131,8 +115,10 @@ export function Sidebar({ onSave }: SidebarProps) {
                 <Input
                   id="openrouter"
                   placeholder="Enter your OpenRouter API key"
-                  value={openrouterKey}
-                  onChange={(e) => setOpenrouterKey(e.target.value)}
+                  value={settings.openrouterKey}
+                  onChange={(e) =>
+                    setSettings({ ...settings, openrouterKey: e.target.value })
+                  }
                   className="border-white/10 bg-white/5 focus:border-white/20"
                 />
               </div>
@@ -166,14 +152,23 @@ export function Sidebar({ onSave }: SidebarProps) {
                       <input
                         type="checkbox"
                         id={model}
-                        checked={selectedModels.includes(model)}
+                        checked={settings.selectedModels.includes(model)}
                         onChange={(e) => {
                           if (e.target.checked) {
-                            setSelectedModels([...selectedModels, model]);
+                            setSettings({
+                              ...settings,
+                              selectedModels: [
+                                ...settings.selectedModels,
+                                model,
+                              ],
+                            });
                           } else {
-                            setSelectedModels(
-                              selectedModels.filter((m) => m !== model)
-                            );
+                            setSettings({
+                              ...settings,
+                              selectedModels: settings.selectedModels.filter(
+                                (m) => m !== model
+                              ),
+                            });
                           }
                         }}
                         className="h-4 w-4 rounded border-white/20 bg-white/5 text-primary"
@@ -185,19 +180,6 @@ export function Sidebar({ onSave }: SidebarProps) {
                   ))
               )}
             </div>
-          </div>
-
-          {/* Save Button */}
-          <div className="flex justify-end">
-            <Button
-              onClick={handleSave}
-              disabled={
-                !geminiKey || !openrouterKey || selectedModels.length === 0
-              }
-              className="bg-white/10 hover:bg-white/20 text-white"
-            >
-              Save Changes
-            </Button>
           </div>
         </div>
       </motion.div>
