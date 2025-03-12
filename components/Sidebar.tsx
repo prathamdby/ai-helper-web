@@ -6,6 +6,7 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import axios from "axios";
 
 interface SidebarProps {
   onSave: (settings: {
@@ -15,20 +16,15 @@ interface SidebarProps {
   }) => void;
 }
 
-const AVAILABLE_MODELS = [
-  "deepseek/deepseek-chat",
-  "qwen/qwq-32b",
-  "google/gemini-pro",
-  "anthropic/claude-3-opus",
-  "anthropic/claude-3-sonnet",
-  "mistral/mistral-large",
-];
-
 export function Sidebar({ onSave }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [geminiKey, setGeminiKey] = useState("");
   const [openrouterKey, setOpenrouterKey] = useState("");
   const [selectedModels, setSelectedModels] = useState<string[]>([]);
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleSave = () => {
     onSave({
@@ -49,6 +45,25 @@ export function Sidebar({ onSave }: SidebarProps) {
 
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
+  }, []);
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      try {
+        const response = await axios.get("https://openrouter.ai/api/v1/models");
+        const freeModels = response.data.data.filter(
+          (model: any) =>
+            model.pricing.prompt === "0" && model.pricing.completion === "0"
+        );
+        setAvailableModels(freeModels.map((model: any) => model.id));
+      } catch (error: any) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchModels();
   }, []);
 
   return (
@@ -127,32 +142,48 @@ export function Sidebar({ onSave }: SidebarProps) {
           {/* Model Selection Section */}
           <div className="space-y-4">
             <h3 className="font-medium text-white/90">Selected Models</h3>
+            <Input
+              placeholder="Search models..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="mb-4 border-white/10 bg-white/5 focus:border-white/20"
+            />
             <div className="scrollbar-thin scrollbar-thumb-white/50 scrollbar-track-white/10 max-h-[200px] space-y-2 overflow-y-auto pr-2">
-              {AVAILABLE_MODELS.map((model) => (
-                <div
-                  key={model}
-                  className="group relative flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-3"
-                >
-                  <input
-                    type="checkbox"
-                    id={model}
-                    checked={selectedModels.includes(model)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedModels([...selectedModels, model]);
-                      } else {
-                        setSelectedModels(
-                          selectedModels.filter((m) => m !== model)
-                        );
-                      }
-                    }}
-                    className="h-4 w-4 rounded border-white/20 bg-white/5 text-primary"
-                  />
-                  <Label htmlFor={model} className="text-sm text-white/90">
-                    {model.split("/")[1]}
-                  </Label>
-                </div>
-              ))}
+              {loading ? (
+                <p className="text-white/70">Loading models...</p>
+              ) : error ? (
+                <p className="text-red-500">Error: {error}</p>
+              ) : (
+                availableModels
+                  .filter((model) =>
+                    model.toLowerCase().includes(searchTerm.toLowerCase())
+                  )
+                  .map((model) => (
+                    <div
+                      key={model}
+                      className="group relative flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-3"
+                    >
+                      <input
+                        type="checkbox"
+                        id={model}
+                        checked={selectedModels.includes(model)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedModels([...selectedModels, model]);
+                          } else {
+                            setSelectedModels(
+                              selectedModels.filter((m) => m !== model)
+                            );
+                          }
+                        }}
+                        className="h-4 w-4 rounded border-white/20 bg-white/5 text-primary"
+                      />
+                      <Label htmlFor={model} className="text-sm text-white/90">
+                        {model.split("/")[1]}
+                      </Label>
+                    </div>
+                  ))
+              )}
             </div>
           </div>
 
