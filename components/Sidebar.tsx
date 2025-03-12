@@ -113,6 +113,7 @@ export function Sidebar() {
                 </Label>
                 <Input
                   id="openrouter"
+                  type="password"
                   placeholder="Enter your OpenRouter API key"
                   value={settings.openrouterKey}
                   onChange={(e) => {
