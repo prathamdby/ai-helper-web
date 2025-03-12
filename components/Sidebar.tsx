@@ -9,6 +9,8 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import useStore from "@/lib/store";
 
+const SETTINGS_KEY = "ai-helper-settings";
+
 export function Sidebar() {
   const [isOpen, setIsOpen] = useState(false);
   const { settings, setSettings } = useStore();
@@ -16,6 +18,13 @@ export function Sidebar() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+
+  useEffect(() => {
+    const savedSettings = localStorage.getItem(SETTINGS_KEY);
+    if (savedSettings) {
+      setSettings(JSON.parse(savedSettings));
+    }
+  }, [setSettings]);
 
   // Close sidebar on Escape key press
   useEffect(() => {
@@ -47,6 +56,10 @@ export function Sidebar() {
 
     fetchModels();
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  }, [settings]);
 
   return (
     <>
@@ -95,20 +108,6 @@ export function Sidebar() {
             <h3 className="font-medium text-white/90">API Keys</h3>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="gemini" className="text-white/70">
-                  Gemini API Key
-                </Label>
-                <Input
-                  id="gemini"
-                  placeholder="Enter your Gemini API key"
-                  value={settings.geminiKey}
-                  onChange={(e) =>
-                    setSettings({ ...settings, geminiKey: e.target.value })
-                  }
-                  className="border-white/10 bg-white/5 focus:border-white/20"
-                />
-              </div>
-              <div className="space-y-2">
                 <Label htmlFor="openrouter" className="text-white/70">
                   OpenRouter API Key
                 </Label>
@@ -116,9 +115,9 @@ export function Sidebar() {
                   id="openrouter"
                   placeholder="Enter your OpenRouter API key"
                   value={settings.openrouterKey}
-                  onChange={(e) =>
-                    setSettings({ ...settings, openrouterKey: e.target.value })
-                  }
+                  onChange={(e) => {
+                    setSettings({ ...settings, openrouterKey: e.target.value });
+                  }}
                   className="border-white/10 bg-white/5 focus:border-white/20"
                 />
               </div>

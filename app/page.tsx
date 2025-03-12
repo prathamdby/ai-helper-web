@@ -10,10 +10,112 @@ import { Sidebar } from "@/components/Sidebar";
 import { motion } from "framer-motion";
 import useStore from "@/lib/store";
 import { useEffect, useRef, useState } from "react";
+import axios from "axios";
+import { getAllModelResponses } from "@/lib/model-responses";
 
 export default function Home() {
   const isMobile = useIsMobile();
-  const { modelResponses, isSettingsConfigured } = useStore();
+  const {
+    setOcrText,
+    setQuestion,
+    setModelResponses,
+    modelResponses,
+    isSettingsConfigured,
+    settings,
+    ocrText,
+    question,
+    isLoading,
+    setLoading,
+  } = useStore();
+
+  const capture = async () => {
+    setLoading(true);
+    if (!canvasRef.current) {
+      setError("Camera not available.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const ctx = canvasRef.current.getContext("2d");
+      if (!ctx) {
+        setError("Could not get canvas context.");
+        return;
+      }
+
+      const imageData = canvasRef.current.toDataURL("image/jpeg");
+
+      const response = await axios.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        {
+          model: "google/gemini-pro-vision",
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: `Extract text from this image:
+If it's a multiple choice question, format as:
+Question: <question>
+Options: <options>
+
+If it's a regular question, format as:
+Question: <question>
+
+ONLY return a Question: line if you detect an actual question in the image.
+If no question is detected, return empty string.`,
+                },
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: imageData,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${settings.openrouterKey}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const detectedText = response.data.choices[0].message.content.trim();
+      setOcrText(detectedText);
+
+      let question = "";
+      let options = "";
+      for (const line of detectedText.split("\n")) {
+        if (line.startsWith("Question:")) {
+          question = line.replace("Question:", "").trim();
+        } else if (line.startsWith("Options:")) {
+          options = line.replace("Options:", "").trim();
+        }
+      }
+
+      if (question) {
+        setQuestion(options ? `${question}\n${options}` : question);
+        getAllModelResponses(question, options);
+      } else {
+        setQuestion("No question detected.");
+      }
+      setLoading(false);
+    } catch (error: any) {
+      setError(error.message);
+      setLoading(false);
+    }
+  };
+
+  const clear = () => {
+    setModelResponses([]);
+    setError(null);
+    setOcrText("");
+    setQuestion("");
+  };
 
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -28,59 +130,6 @@ export default function Home() {
           },
         });
         setStream(stream);
-
-        const video = document.createElement("video");
-        video.srcObject = stream;
-        video.onloadedmetadata = () => {
-          video.play();
-          const renderFrame = () => {
-            if (!video.paused && !video.ended && canvasRef.current) {
-              const ctx = canvasRef.current.getContext("2d");
-              if (ctx) {
-                const canvasWidth = canvasRef.current.width;
-                const canvasHeight = canvasRef.current.height;
-                const videoWidth = video.videoWidth;
-                const videoHeight = video.videoHeight;
-
-                const canvasAspectRatio = canvasWidth / canvasHeight;
-                const videoAspectRatio = videoWidth / videoHeight;
-
-                let sourceX = 0;
-                let sourceY = 0;
-                let sourceWidth = videoWidth;
-                let sourceHeight = videoHeight;
-                let destX = 0;
-                let destY = 0;
-                let destWidth = canvasWidth;
-                let destHeight = canvasHeight;
-
-                if (canvasAspectRatio > videoAspectRatio) {
-                  // Canvas is wider than the video, so crop the top and bottom
-                  sourceHeight = videoWidth / canvasAspectRatio;
-                  sourceY = (videoHeight - sourceHeight) / 2;
-                } else {
-                  // Canvas is taller than the video, so crop the left and right
-                  sourceWidth = videoHeight * canvasAspectRatio;
-                  sourceX = (videoWidth - sourceWidth) / 2;
-                }
-
-                ctx.drawImage(
-                  video,
-                  sourceX,
-                  sourceY,
-                  sourceWidth,
-                  sourceHeight,
-                  destX,
-                  destY,
-                  destWidth,
-                  destHeight
-                );
-              }
-            }
-            requestAnimationFrame(renderFrame);
-          };
-          renderFrame();
-        };
       } catch (err: any) {
         setError(err.message);
       }
@@ -96,6 +145,83 @@ export default function Home() {
       }
     };
   }, [isSettingsConfigured]);
+
+  useEffect(() => {
+    const video = document.createElement("video");
+    if (stream) {
+      video.srcObject = stream;
+      video.onloadedmetadata = () => {
+        video.play();
+        const renderFrame = () => {
+          if (!video.paused && !video.ended && canvasRef.current) {
+            const ctx = canvasRef.current.getContext("2d");
+            if (ctx) {
+              const canvasWidth = canvasRef.current.width;
+              const canvasHeight = canvasRef.current.height;
+              const videoWidth = video.videoWidth;
+              const videoHeight = video.videoHeight;
+
+              const canvasAspectRatio = canvasWidth / canvasHeight;
+              const videoAspectRatio = videoWidth / videoHeight;
+
+              let sourceX = 0;
+              let sourceY = 0;
+              let sourceWidth = videoWidth;
+              let sourceHeight = videoHeight;
+              let destX = 0;
+              let destY = 0;
+              let destWidth = canvasWidth;
+              let destHeight = canvasHeight;
+
+              if (canvasAspectRatio > videoAspectRatio) {
+                // Canvas is wider than the video, so crop the top and bottom
+                sourceHeight = videoWidth / canvasAspectRatio;
+                sourceY = (videoHeight - sourceHeight) / 2;
+              } else {
+                // Canvas is taller than the video, so crop the left and right
+                sourceWidth = videoHeight * canvasAspectRatio;
+                sourceX = (videoWidth - sourceWidth) / 2;
+              }
+
+              ctx.drawImage(
+                video,
+                sourceX,
+                sourceY,
+                sourceWidth,
+                sourceHeight,
+                destX,
+                destY,
+                destWidth,
+                destHeight
+              );
+            }
+          }
+          requestAnimationFrame(renderFrame);
+        };
+        renderFrame();
+      };
+    }
+  }, [stream]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      e.preventDefault();
+
+      if (e.code === "Space") {
+        capture();
+      } else if (e.code === "KeyX") {
+        clear();
+      }
+    };
+
+    if (!isMobile && isSettingsConfigured) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMobile, isSettingsConfigured, capture, clear]);
 
   return (
     <main className="flex flex-col min-h-screen w-full bg-background">
@@ -175,9 +301,9 @@ export default function Home() {
           >
             <Card className="p-4">
               <p className="text-sm font-mono text-muted-foreground">
-                {isSettingsConfigured
-                  ? "OCR: Waiting for capture..."
-                  : "OCR: Configure settings to start"}
+                OCR:{" "}
+                {ocrText ||
+                  (isLoading ? "Loading..." : "Waiting for capture...")}
               </p>
             </Card>
           </motion.div>
@@ -190,9 +316,10 @@ export default function Home() {
           >
             <Card className="p-4">
               <p className="text-sm font-medium mb-4">
-                {isSettingsConfigured
-                  ? "Point your camera at a question and press SPACE to analyze"
-                  : "Click the settings icon in the top-right to configure API keys and models"}
+                {question ||
+                  (isSettingsConfigured
+                    ? "Point your camera at a question and press SPACE to analyze"
+                    : "Click the settings icon in the top-right to configure API keys and models")}
               </p>
 
               {/* Dynamic Model Responses */}
@@ -213,6 +340,7 @@ export default function Home() {
                       <div className="text-blue-500">{model.name}:</div>
                       <div className="text-muted-foreground">
                         {model.status}
+                        {model.timeTaken && ` (${model.timeTaken.toFixed(2)}s)`}
                       </div>
                     </motion.div>
                   ))
@@ -233,11 +361,16 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
         >
-          <Button size="lg" className="w-full" variant="outline">
+          <Button
+            size="lg"
+            className="w-full"
+            variant="outline"
+            onClick={clear}
+          >
             <X className="w-4 h-4 mr-2" />
             Clear
           </Button>
-          <Button size="lg" className="w-full">
+          <Button size="lg" className="w-full" onClick={capture}>
             <Space className="w-4 h-4 mr-2" />
             Capture
           </Button>
