@@ -3,7 +3,7 @@
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Space, Camera, X, KeySquare } from "lucide-react";
+import { Space, Camera, X, KeySquare, Loader2 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Sidebar } from "@/components/Sidebar";
@@ -370,9 +370,23 @@ If no question is detected, return empty string.`,
             <X className="w-4 h-4 mr-2" />
             Clear
           </Button>
-          <Button size="lg" className="w-full" onClick={capture}>
-            <Space className="w-4 h-4 mr-2" />
-            Capture
+          <Button
+            size="lg"
+            className="w-full"
+            onClick={capture}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5" />
+                Loading...
+              </>
+            ) : (
+              <>
+                <Space className="w-4 h-4 mr-2" />
+                Capture
+              </>
+            )}
           </Button>
         </motion.div>
       )}
