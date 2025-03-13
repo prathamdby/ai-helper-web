@@ -36,7 +36,7 @@ const useStore = create<AppState>((set) => ({
   question: "",
   isLoading: false,
   setSettings: (settings) =>
-    set((state) => {
+    set(() => {
       const isSettingsConfigured = !!(
         settings.openrouterKey && settings.selectedModels.length > 0
       );

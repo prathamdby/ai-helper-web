@@ -218,13 +218,15 @@ Just the direct answer and nothing else.`;
       if (attempt < MAX_RETRIES) {
         await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1 second before retrying
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (attempt < MAX_RETRIES) {
         await new Promise((resolve) => setTimeout(resolve, 1000));
       } else {
         return {
           name: model,
-          status: `Error: ${error.message}`,
+          status: `Error: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`,
         };
       }
     }

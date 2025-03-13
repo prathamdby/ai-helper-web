@@ -43,12 +43,14 @@ export function Sidebar() {
       try {
         const response = await axios.get("https://openrouter.ai/api/v1/models");
         const freeModels = response.data.data.filter(
-          (model: any) =>
-            model.pricing.prompt === "0" && model.pricing.completion === "0"
+          (model: {
+            pricing: { prompt: string; completion: string };
+            id: string;
+          }) => model.pricing.prompt === "0" && model.pricing.completion === "0"
         );
-        setAvailableModels(freeModels.map((model: any) => model.id));
-      } catch (error: any) {
-        setError(error.message);
+        setAvailableModels(freeModels.map((model: { id: string }) => model.id));
+      } catch (error: unknown) {
+        setError(error instanceof Error ? error.message : "An error occurred");
       } finally {
         setLoading(false);
       }

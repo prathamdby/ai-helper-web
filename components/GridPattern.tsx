@@ -5,14 +5,9 @@ import { cn } from "@/lib/utils";
 interface GridPatternProps {
   className?: string;
   size?: number;
-  opacity?: number;
 }
 
-const GridPattern = ({
-  className,
-  size = 50,
-  opacity = 0.05,
-}: GridPatternProps = {}) => {
+const GridPattern = ({ className, size = 50 }: GridPatternProps = {}) => {
   return (
     <div
       className={cn(
