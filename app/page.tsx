@@ -449,7 +449,7 @@ Return ONLY the formatted text without any additional explanation.`,
   );
 
   return (
-    <main className="flex flex-col min-h-screen w-full bg-background relative overflow-hidden">
+    <main className="flex flex-col min-h-screen w-full relative overflow-hidden">
       <GridPattern />
       <Sidebar />
       <div className="px-6 lg:px-16 pt-12 pb-8 relative z-10">
@@ -468,8 +468,8 @@ Return ONLY the formatted text without any additional explanation.`,
           transition={{ delay: 0.1 }}
         >
           {error ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-red-500/20">
-              <p className="text-red-500 text-sm">{error}</p>
+            <div className="absolute inset-0 flex items-center justify-center bg-destructive/20">
+              <p className="text-destructive text-sm">{error}</p>
             </div>
           ) : stream ? (
             <canvas ref={canvasRef} className="w-full h-full" />
@@ -489,20 +489,20 @@ Return ONLY the formatted text without any additional explanation.`,
             {(() => {
               // Determine status and styling based on app state
               let statusText = "Unknown";
-              let statusClass = "bg-gray-500/20 text-gray-500";
+              let statusClass = "bg-muted/20 text-muted-foreground";
 
               if (!isSettingsConfigured) {
                 statusText = "Settings Required";
-                statusClass = "bg-red-500/20 text-red-500";
+                statusClass = "bg-destructive/20 text-destructive";
               } else if (error) {
                 statusText = "Camera Error";
-                statusClass = "bg-red-500/20 text-red-500";
+                statusClass = "bg-destructive/20 text-destructive";
               } else if (isLoading) {
                 statusText = "Processing...";
-                statusClass = "bg-blue-500/20 text-blue-500";
+                statusClass = "bg-primary/20 text-primary";
               } else if (!stream) {
                 statusText = "Initializing Camera";
-                statusClass = "bg-orange-500/20 text-orange-500";
+                statusClass = "bg-primary/10 text-primary/80";
               } else if (
                 ocrText &&
                 question &&
@@ -515,14 +515,14 @@ Return ONLY the formatted text without any additional explanation.`,
 
                 if (anyModelProcessing) {
                   statusText = "Models Processing...";
-                  statusClass = "bg-blue-500/20 text-blue-500";
+                  statusClass = "bg-primary/20 text-primary";
                 } else {
                   statusText = "Analysis Complete";
-                  statusClass = "bg-green-500/20 text-green-500";
+                  statusClass = "bg-primary/80 text-primary-foreground";
                 }
               } else {
                 statusText = "Ready";
-                statusClass = "bg-yellow-500/20 text-yellow-500";
+                statusClass = "bg-primary/30 text-primary";
               }
 
               return (
@@ -546,7 +546,7 @@ Return ONLY the formatted text without any additional explanation.`,
             >
               <Card className="p-3 bg-background/80 backdrop-blur-sm">
                 <div className="flex flex-col gap-2 text-xs">
-                  <div className="flex items-center gap-2 text-green-500">
+                  <div className="flex items-center gap-2 text-primary">
                     <KeySquare className="w-4 h-4" />
                     <span>Controls:</span>
                   </div>
@@ -576,7 +576,7 @@ Return ONLY the formatted text without any additional explanation.`,
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 font-medium">
                   <BookOpen className="h-5 w-5 text-primary" />
-                  <h3 className="text-lg">Question</h3>
+                  <h3 className="text-lg text-white">Question</h3>
                 </div>
 
                 {(question || ocrText) && (
@@ -635,9 +635,9 @@ Return ONLY the formatted text without any additional explanation.`,
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 font-medium">
                   <BrainCircuit className="h-5 w-5 text-primary" />
-                  <h3 className="text-lg">AI Answers</h3>
+                  <h3 className="text-lg text-white">AI Answers</h3>
                   {modelResponses.some((m) => m.status === "Processing...") && (
-                    <Loader2 className="h-4 w-4 animate-spin ml-1 text-blue-500" />
+                    <Loader2 className="h-4 w-4 animate-spin ml-1 text-primary" />
                   )}
                 </div>
               </div>
@@ -657,14 +657,14 @@ Return ONLY the formatted text without any additional explanation.`,
                         let bgColor = "";
 
                         if (model.status === "Processing...") {
-                          statusColor = "text-blue-500";
-                          bgColor = "bg-blue-500/5";
+                          statusColor = "text-primary";
+                          bgColor = "bg-primary/5";
                         } else if (model.status.startsWith("Error:")) {
-                          statusColor = "text-red-500";
-                          bgColor = "bg-red-500/5";
+                          statusColor = "text-destructive";
+                          bgColor = "bg-destructive/5";
                         } else {
-                          statusColor = "text-green-500";
-                          bgColor = "bg-green-500/5";
+                          statusColor = "text-primary/80";
+                          bgColor = "bg-primary/5";
                         }
 
                         return (
@@ -739,9 +739,9 @@ Return ONLY the formatted text without any additional explanation.`,
                 <summary className="flex items-center justify-between mb-2 cursor-pointer list-none">
                   <div className="flex items-center gap-2 font-medium">
                     <Camera className="h-5 w-5 text-primary" />
-                    <h3 className="text-lg">OCR Text</h3>
+                    <h3 className="text-lg text-white">OCR Text</h3>
                   </div>
-                  <div className="text-muted-foreground text-sm group-open:rotate-180 transition-transform">
+                  <div className="text-white text-sm group-open:rotate-180 transition-transform">
                     <svg
                       width="16"
                       height="16"

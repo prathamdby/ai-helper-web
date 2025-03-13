@@ -74,14 +74,14 @@ export function Sidebar() {
 
   return (
     <>
-      {/* Toggle Button */}
+      {/* Toggle button */}
       <Button
+        onClick={() => setIsOpen(!isOpen)}
         variant="outline"
         size="icon"
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed left-4 top-4 z-50 items-center border-white/10 bg-white/10 hover:bg-white/20"
+        className="fixed left-4 top-4 z-50 bg-white/10 border-white/20 text-white"
       >
-        <Menu className="h-[1.2rem] w-[1.2rem] text-white" />
+        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </Button>
 
       {/* Backdrop */}
@@ -107,9 +107,9 @@ export function Sidebar() {
             variant="ghost"
             size="icon"
             onClick={() => setIsOpen(false)}
-            className="h-8 w-8 rounded-lg p-0.5"
+            className="h-8 w-8 rounded-lg p-0.5 text-white"
           >
-            <X className="h-4 w-4 text-white" />
+            <X className="h-4 w-4" />
           </Button>
         </div>
 
@@ -149,7 +149,7 @@ export function Sidebar() {
               {loading ? (
                 <p className="text-white/70">Loading models...</p>
               ) : error ? (
-                <p className="text-red-500">Error: {error}</p>
+                <p className="text-destructive">Error: {error}</p>
               ) : (
                 availableModels
                   .filter((model) =>
@@ -171,7 +171,7 @@ export function Sidebar() {
                       key={model}
                       className={`group relative flex items-center rounded-lg border ${
                         settings.selectedModels.includes(model)
-                          ? "border-green-500/30 bg-green-500/10"
+                          ? "border-primary/30 bg-primary/10"
                           : "border-white/10 bg-white/5"
                       } p-3`}
                     >
@@ -198,14 +198,14 @@ export function Sidebar() {
                               });
                             }
                           }}
-                          className="h-4 w-4 mr-3 shrink-0 rounded border-white/20 bg-white/5 text-primary"
+                          className="mr-3 h-4 w-4 accent-primary"
                         />
-                        <Label
+                        <label
                           htmlFor={model}
-                          className="text-sm text-white/90 cursor-pointer truncate"
+                          className="cursor-pointer truncate text-sm text-white/80"
                         >
-                          {model.split("/")[1]}
-                        </Label>
+                          {model}
+                        </label>
                       </div>
                     </div>
                   ))
@@ -214,15 +214,15 @@ export function Sidebar() {
           </div>
         </div>
 
-        {/* Clear All Settings Button */}
+        {/* Clear settings button */}
         <div className="mt-6 pt-4 border-t border-white/10">
           <Button
-            variant="destructive"
-            className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30"
             onClick={handleClearSettings}
+            variant="outline"
+            className="w-full h-10 text-destructive hover:text-destructive border-destructive/20 hover:bg-destructive/10"
           >
             <Trash2 className="mr-2 h-4 w-4" />
-            Clear All Settings
+            Clear Settings
           </Button>
         </div>
       </motion.div>
