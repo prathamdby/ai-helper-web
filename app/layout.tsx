@@ -17,6 +17,32 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "AI Helper",
   description: "Real-time question analysis using computer vision and AI",
+  metadataBase: new URL("https://ai-helper-web.vercel.app"),
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://ai-helper-web.vercel.app",
+    title: "AI Helper - Real-time Question Analysis",
+    description:
+      "Analyze questions in real-time using computer vision and multiple AI models",
+    siteName: "AI Helper",
+    images: [
+      {
+        url: "/images/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "AI Helper - Real-time question analysis using computer vision and AI",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AI Helper - Real-time Question Analysis",
+    description:
+      "Analyze questions in real-time using computer vision and multiple AI models",
+    images: ["/images/og-image.jpg"],
+    creator: "@prathamdby",
+  },
 };
 
 export default function RootLayout({
