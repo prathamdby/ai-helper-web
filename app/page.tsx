@@ -28,7 +28,7 @@ export default function Home() {
 
   // Use the capture logic
   const { capture, clear } = CaptureLogic({
-    canvasRef,
+    canvasRef: canvasRef as React.RefObject<HTMLCanvasElement>,
     videoRef,
     setError,
   });
