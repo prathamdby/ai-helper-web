@@ -55,16 +55,28 @@ export default function Home() {
               content: [
                 {
                   type: "text",
-                  text: `Extract text from this image:
-If it's a multiple choice question, format as:
-Question: <question>
-Options: <options>
+                  text: `Extract text from this image with high accuracy:
 
-If it's a regular question, format as:
-Question: <question>
+If it's a multiple choice question, format EXACTLY as:
+Question: <full question text>
+Options: A. <option A text>
+B. <option B text>
+C. <option C text>
+D. <option D text>
 
-ONLY return a Question: line if you detect an actual question in the image.
-If no question is detected, return empty string.`,
+If it's a regular question without options, format EXACTLY as:
+Question: <full question text>
+
+Important instructions:
+1. Preserve ALL text exactly as written in the image
+2. Include the full question text, not just a summary
+3. For multiple choice, include the letter (A, B, C, D) with each option
+4. Maintain proper formatting of mathematical equations, symbols, and special characters
+5. If the image contains multiple questions, focus on the most prominent one
+6. ONLY return a Question: line if you detect an actual question in the image
+7. If no question is detected, return empty string
+
+Return ONLY the formatted text without any additional explanation.`,
                 },
                 {
                   type: "image_url",
@@ -96,11 +108,29 @@ If no question is detected, return empty string.`,
 
       let question = "";
       let options = "";
-      for (const line of detectedText.split("\n")) {
+      let isOptionsSection = false;
+      const lines = detectedText.split("\n");
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
         if (line.startsWith("Question:")) {
           question = line.replace("Question:", "").trim();
         } else if (line.startsWith("Options:")) {
+          isOptionsSection = true;
           options = line.replace("Options:", "").trim();
+
+          // Collect all option lines (A, B, C, D)
+          let j = i + 1;
+          while (
+            j < lines.length &&
+            (lines[j].trim().match(/^[A-D]\./) ||
+              lines[j].trim().match(/^[A-D]\s/))
+          ) {
+            options += "\n" + lines[j].trim();
+            j++;
+          }
+          i = j - 1; // Skip the lines we've processed
         }
       }
 
