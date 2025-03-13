@@ -266,9 +266,54 @@ If no question is detected, return empty string.`,
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="px-3 py-1.5 bg-yellow-500/20 text-yellow-500 rounded-md text-sm font-medium">
-              {isSettingsConfigured ? "Ready" : "Configure Settings"}
-            </div>
+            {(() => {
+              // Determine status and styling based on app state
+              let statusText = "Unknown";
+              let statusClass = "bg-gray-500/20 text-gray-500";
+
+              if (!isSettingsConfigured) {
+                statusText = "Settings Required";
+                statusClass = "bg-red-500/20 text-red-500";
+              } else if (error) {
+                statusText = "Camera Error";
+                statusClass = "bg-red-500/20 text-red-500";
+              } else if (isLoading) {
+                statusText = "Processing...";
+                statusClass = "bg-blue-500/20 text-blue-500";
+              } else if (!stream) {
+                statusText = "Initializing Camera";
+                statusClass = "bg-orange-500/20 text-orange-500";
+              } else if (
+                ocrText &&
+                question &&
+                question !== "No question detected."
+              ) {
+                // Check if any model is still processing
+                const anyModelProcessing = modelResponses.some(
+                  (model) => model.status === "Processing..."
+                );
+
+                if (anyModelProcessing) {
+                  statusText = "Models Processing...";
+                  statusClass = "bg-blue-500/20 text-blue-500";
+                } else {
+                  statusText = "Analysis Complete";
+                  statusClass = "bg-green-500/20 text-green-500";
+                }
+              } else {
+                statusText = "Ready";
+                statusClass = "bg-yellow-500/20 text-yellow-500";
+              }
+
+              return (
+                <div
+                  className={`px-3 py-1.5 ${statusClass} rounded-md text-sm font-medium flex items-center gap-2`}
+                >
+                  {isLoading && <Loader2 className="w-3 h-3 animate-spin" />}
+                  {statusText}
+                </div>
+              );
+            })()}
           </motion.div>
 
           {/* Controls - Only show on desktop */}
