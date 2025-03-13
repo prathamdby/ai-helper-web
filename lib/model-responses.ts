@@ -130,12 +130,20 @@ export async function getAllModelResponses(
   setModelResponses(responses);
   setLoading(true);
 
-  const updatedResponses = [...responses];
-  for (let i = 0; i < models.length; i++) {
-    const model = models[i];
-    const result = await getModelResponse(question, options, model);
-    updatedResponses[i] = result;
-    setModelResponses(updatedResponses);
+  try {
+    const responsePromises = models.map((model, index) =>
+      getModelResponse(question, options, model).then((result) => {
+        const updatedResponses = [...useStore.getState().modelResponses];
+        updatedResponses[index] = result;
+        setModelResponses(updatedResponses);
+        return result;
+      })
+    );
+
+    await Promise.all(responsePromises);
+  } catch (error) {
+    console.error("Error processing model responses:", error);
+  } finally {
+    setLoading(false);
   }
-  setLoading(false);
 }
