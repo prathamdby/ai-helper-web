@@ -26,6 +26,7 @@ import { getAllModelResponses } from "@/lib/model-responses";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import GridPattern from "@/components/GridPattern";
 
 export default function Home() {
   const isMobile = useIsMobile();
@@ -448,13 +449,14 @@ Return ONLY the formatted text without any additional explanation.`,
   );
 
   return (
-    <main className="flex flex-col min-h-screen w-full bg-background">
+    <main className="flex flex-col min-h-screen w-full bg-background relative overflow-hidden">
+      <GridPattern />
       <Sidebar />
-      <div className="px-6 lg:px-16 pt-12 pb-8">
+      <div className="px-6 lg:px-16 pt-12 pb-8 relative z-10">
         <Header />
       </div>
       <motion.div
-        className="flex-1 px-6 lg:px-16"
+        className="flex-1 px-6 lg:px-16 relative z-10"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -785,7 +787,7 @@ Return ONLY the formatted text without any additional explanation.`,
       {/* Mobile Action Buttons - Only show when configured */}
       {isMobile && isSettingsConfigured && (
         <motion.div
-          className="fixed bottom-4 inset-x-6 grid grid-cols-2 gap-4"
+          className="fixed bottom-4 inset-x-6 grid grid-cols-2 gap-4 z-20"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
