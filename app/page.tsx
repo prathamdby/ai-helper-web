@@ -48,7 +48,7 @@ export default function Home() {
       const response = await axios.post(
         "https://openrouter.ai/api/v1/chat/completions",
         {
-          model: "google/gemini-pro-vision",
+          model: "google/gemini-2.0-pro-exp-02-05:free",
           messages: [
             {
               role: "user",
@@ -84,7 +84,14 @@ If no question is detected, return empty string.`,
         }
       );
 
-      const detectedText = response.data.choices[0].message.content.trim();
+      const choices = response.data.choices;
+      if (!choices || choices.length === 0) {
+        setOcrText("Error: No response from model");
+        setLoading(false);
+        return;
+      }
+
+      const detectedText = choices[0].message.content.trim();
       setOcrText(detectedText);
 
       let question = "";
