@@ -46,6 +46,9 @@ export default function Home() {
   // State for copy button
   const [copied, setCopied] = useState(false);
 
+  // State for OCR text section visibility
+  const [isOcrSectionOpen, setIsOcrSectionOpen] = useState(false);
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -733,21 +736,29 @@ Return ONLY the formatted text without any additional explanation.`,
               </Card>
             </div>
 
-            {/* OCR Text Section (Collapsible) */}
+            {/* OCR Text Section (Custom Collapsible) */}
             <div className="w-full">
-              <details className="group">
-                <summary className="flex items-center justify-between mb-2 cursor-pointer list-none">
+              <div className="mb-2">
+                <button
+                  onClick={() => setIsOcrSectionOpen(!isOcrSectionOpen)}
+                  className="flex items-center justify-between w-full cursor-pointer outline-none"
+                >
                   <div className="flex items-center gap-2 font-medium">
-                    <Camera className="h-5 w-5 text-primary" />
+                    <Camera className="h-5 w-5 text-primary flex-shrink-0" />
                     <h3 className="text-lg text-white">OCR Text</h3>
                   </div>
-                  <div className="text-white text-sm group-open:rotate-180 transition-transform">
+                  <div
+                    className={`text-white text-sm transition-transform ${
+                      isOcrSectionOpen ? "rotate-180" : ""
+                    }`}
+                  >
                     <svg
                       width="16"
                       height="16"
                       viewBox="0 0 16 16"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
+                      className="flex-shrink-0"
                     >
                       <path
                         d="M4 6L8 10L12 6"
@@ -758,8 +769,10 @@ Return ONLY the formatted text without any additional explanation.`,
                       />
                     </svg>
                   </div>
-                </summary>
+                </button>
+              </div>
 
+              {isOcrSectionOpen && (
                 <Card className="overflow-hidden mt-2">
                   <div className="p-4 min-h-[100px] font-mono text-sm whitespace-pre-wrap break-words">
                     {isLoading ? (
@@ -776,7 +789,7 @@ Return ONLY the formatted text without any additional explanation.`,
                     )}
                   </div>
                 </Card>
-              </details>
+              )}
             </div>
           </motion.div>
         </div>
