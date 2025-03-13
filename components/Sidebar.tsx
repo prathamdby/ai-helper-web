@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, X } from "lucide-react";
+import { Menu, X, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -60,6 +60,17 @@ export function Sidebar() {
   useEffect(() => {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
   }, [settings]);
+
+  const handleClearSettings = () => {
+    // Reset settings to default values
+    setSettings({
+      openrouterKey: "",
+      selectedModels: [],
+    });
+
+    // Clear from localStorage
+    localStorage.removeItem(SETTINGS_KEY);
+  };
 
   return (
     <>
@@ -144,43 +155,75 @@ export function Sidebar() {
                   .filter((model) =>
                     model.toLowerCase().includes(searchTerm.toLowerCase())
                   )
+                  .sort((a, b) => {
+                    // Sort by selected status first (selected models come first)
+                    const aSelected = settings.selectedModels.includes(a);
+                    const bSelected = settings.selectedModels.includes(b);
+
+                    if (aSelected && !bSelected) return -1;
+                    if (!aSelected && bSelected) return 1;
+
+                    // If both have the same selected status, sort alphabetically
+                    return a.localeCompare(b);
+                  })
                   .map((model) => (
                     <div
                       key={model}
-                      className="group relative flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 p-3"
+                      className={`group relative flex items-center rounded-lg border ${
+                        settings.selectedModels.includes(model)
+                          ? "border-green-500/30 bg-green-500/10"
+                          : "border-white/10 bg-white/5"
+                      } p-3`}
                     >
-                      <input
-                        type="checkbox"
-                        id={model}
-                        checked={settings.selectedModels.includes(model)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSettings({
-                              ...settings,
-                              selectedModels: [
-                                ...settings.selectedModels,
-                                model,
-                              ],
-                            });
-                          } else {
-                            setSettings({
-                              ...settings,
-                              selectedModels: settings.selectedModels.filter(
-                                (m) => m !== model
-                              ),
-                            });
-                          }
-                        }}
-                        className="h-4 w-4 rounded border-white/20 bg-white/5 text-primary"
-                      />
-                      <Label htmlFor={model} className="text-sm text-white/90">
-                        {model.split("/")[1]}
-                      </Label>
+                      <div className="flex items-center min-w-0 w-full">
+                        <input
+                          type="checkbox"
+                          id={model}
+                          checked={settings.selectedModels.includes(model)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSettings({
+                                ...settings,
+                                selectedModels: [
+                                  ...settings.selectedModels,
+                                  model,
+                                ],
+                              });
+                            } else {
+                              setSettings({
+                                ...settings,
+                                selectedModels: settings.selectedModels.filter(
+                                  (m) => m !== model
+                                ),
+                              });
+                            }
+                          }}
+                          className="h-4 w-4 mr-3 shrink-0 rounded border-white/20 bg-white/5 text-primary"
+                        />
+                        <Label
+                          htmlFor={model}
+                          className="text-sm text-white/90 cursor-pointer truncate"
+                        >
+                          {model.split("/")[1]}
+                        </Label>
+                      </div>
                     </div>
                   ))
               )}
             </div>
           </div>
+        </div>
+
+        {/* Clear All Settings Button */}
+        <div className="mt-6 pt-4 border-t border-white/10">
+          <Button
+            variant="destructive"
+            className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30"
+            onClick={handleClearSettings}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Clear All Settings
+          </Button>
         </div>
       </motion.div>
     </>
