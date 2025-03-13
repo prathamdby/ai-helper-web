@@ -57,6 +57,10 @@ export default function Home() {
 
   const capture = async () => {
     setLoading(true);
+
+    // Clear any previous error
+    setError(null);
+
     if (!canvasRef.current) {
       setError("Camera not available.");
       setLoading(false);
@@ -67,7 +71,21 @@ export default function Home() {
       const ctx = canvasRef.current.getContext("2d");
       if (!ctx) {
         setError("Could not get canvas context.");
+        setLoading(false);
         return;
+      }
+
+      // If video is paused or ended, try to restart it
+      if (
+        videoRef.current &&
+        (videoRef.current.paused || videoRef.current.ended)
+      ) {
+        try {
+          await videoRef.current.play();
+        } catch (err) {
+          console.error("Failed to restart video on capture:", err);
+          // Continue anyway, we'll use whatever is on the canvas
+        }
       }
 
       const imageData = canvasRef.current.toDataURL("image/jpeg");
@@ -204,6 +222,31 @@ Return ONLY the formatted text without any additional explanation.`,
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  // Function to restart video stream
+  const restartVideoStream = async () => {
+    try {
+      // Clear any existing error
+      setError(null);
+
+      // Stop any existing stream
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+
+      // Get a new stream
+      const newStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "environment",
+        },
+      });
+
+      setStream(newStream);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
 
   useEffect(() => {
     const getCameraStream = async () => {
@@ -232,14 +275,38 @@ Return ONLY the formatted text without any additional explanation.`,
 
   useEffect(() => {
     const video = document.createElement("video");
+    video.muted = true;
+    video.playsInline = true;
+    video.setAttribute("autoplay", "");
+    videoRef.current = video;
+
     if (stream) {
       video.srcObject = stream;
       video.onloadedmetadata = () => {
-        video.play();
+        // Handle play as a promise with proper error handling
+        const playVideo = async () => {
+          try {
+            await video.play();
+          } catch (err) {
+            console.error("Error playing video:", err);
+            setError(
+              "Browser blocked video autoplay. Click 'Restart Camera' to try again."
+            );
+          }
+        };
+
+        playVideo();
+
         const renderFrame = () => {
           if (!video.paused && !video.ended && canvasRef.current) {
             const ctx = canvasRef.current.getContext("2d");
             if (ctx) {
+              // Make sure canvas dimensions are set correctly
+              if (!canvasRef.current.width || !canvasRef.current.height) {
+                canvasRef.current.width = video.videoWidth;
+                canvasRef.current.height = video.videoHeight;
+              }
+
               const canvasWidth = canvasRef.current.width;
               const canvasHeight = canvasRef.current.height;
               const videoWidth = video.videoWidth;
@@ -471,11 +538,33 @@ Return ONLY the formatted text without any additional explanation.`,
           transition={{ delay: 0.1 }}
         >
           {error ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-destructive/20">
-              <p className="text-destructive text-sm">{error}</p>
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-destructive/20">
+              <p className="text-destructive text-sm mb-3">{error}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={restartVideoStream}
+                className="bg-background/80"
+              >
+                Restart Camera
+              </Button>
             </div>
           ) : stream ? (
-            <canvas ref={canvasRef} className="w-full h-full" />
+            <canvas
+              ref={canvasRef}
+              className="w-full h-full"
+              onClick={() => {
+                // Try to play video on user interaction (helps with Safari)
+                if (
+                  videoRef.current &&
+                  (videoRef.current.paused || videoRef.current.ended)
+                ) {
+                  videoRef.current.play().catch((err) => {
+                    console.error("Failed to play video on click:", err);
+                  });
+                }
+              }}
+            />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
               <Camera className="w-16 h-16 text-muted-foreground" />
