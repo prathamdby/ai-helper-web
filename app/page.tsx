@@ -3,7 +3,18 @@
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Space, Camera, X, KeySquare, Loader2 } from "lucide-react";
+import {
+  Space,
+  Camera,
+  X,
+  KeySquare,
+  Loader2,
+  Copy,
+  Check,
+  BookOpen,
+  BrainCircuit,
+  Sparkles,
+} from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Sidebar } from "@/components/Sidebar";
@@ -12,6 +23,9 @@ import useStore from "@/lib/store";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { getAllModelResponses } from "@/lib/model-responses";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export default function Home() {
   const isMobile = useIsMobile();
@@ -27,6 +41,15 @@ export default function Home() {
     isLoading,
     setLoading,
   } = useStore();
+
+  // State for copy button
+  const [copied, setCopied] = useState(false);
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const capture = async () => {
     setLoading(true);
@@ -111,28 +134,48 @@ Return ONLY the formatted text without any additional explanation.`,
       let isOptionsSection = false;
       const lines = detectedText.split("\n");
 
+      // First, try to extract the question
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-
         if (line.startsWith("Question:")) {
           question = line.replace("Question:", "").trim();
-        } else if (line.startsWith("Options:")) {
-          isOptionsSection = true;
-          options = line.replace("Options:", "").trim();
-
-          // Collect all option lines (A, B, C, D)
-          let j = i + 1;
-          while (
-            j < lines.length &&
-            (lines[j].trim().match(/^[A-D]\./) ||
-              lines[j].trim().match(/^[A-D]\s/))
-          ) {
-            options += "\n" + lines[j].trim();
-            j++;
-          }
-          i = j - 1; // Skip the lines we've processed
+          break;
         }
       }
+
+      // Then, extract all options with different approaches to ensure we catch them all
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+
+        // Skip the question line
+        if (line.startsWith("Question:")) continue;
+
+        // Check for Options: header
+        if (line.startsWith("Options:")) {
+          isOptionsSection = true;
+          // If the options are on the same line (e.g., "Options: A. Option")
+          const optionOnSameLine = line.replace("Options:", "").trim();
+          if (optionOnSameLine.match(/^[A-D](?:\.|\)|\s)/)) {
+            options = optionOnSameLine;
+          }
+          continue;
+        }
+
+        // Detect option lines in various formats
+        if (
+          line.match(/^[A-D](?:\.|\)|\s)/) ||
+          (isOptionsSection && line.length > 0)
+        ) {
+          if (options === "") {
+            options = line;
+          } else {
+            options += "\n" + line;
+          }
+        }
+      }
+
+      console.log("Parsed question:", question);
+      console.log("Parsed options:", options);
 
       if (question) {
         setQuestion(options ? `${question}\n${options}` : question);
@@ -259,6 +302,151 @@ Return ONLY the formatted text without any additional explanation.`,
     };
   }, [isMobile, isSettingsConfigured, capture, clear]);
 
+  // Format question and options for display
+  const formatQuestionDisplay = () => {
+    if (!question) return null;
+
+    if (question === "No question detected.") {
+      return (
+        <div className="text-center text-muted-foreground italic">
+          No question detected in the image
+        </div>
+      );
+    }
+
+    // More robust parsing of question and options
+    const lines = question.split("\n");
+    let questionText = lines[0];
+    let optionLines: string[] = [];
+
+    // If the first line contains both question and option, separate them
+    if (
+      questionText.includes("A)") ||
+      questionText.includes("A.") ||
+      questionText.includes("A ")
+    ) {
+      const optionStartIndex = Math.min(
+        questionText.indexOf("A)") >= 0 ? questionText.indexOf("A)") : Infinity,
+        questionText.indexOf("A.") >= 0 ? questionText.indexOf("A.") : Infinity,
+        questionText.indexOf("A ") >= 0 ? questionText.indexOf("A ") : Infinity
+      );
+
+      if (optionStartIndex !== Infinity) {
+        optionLines.push(questionText.substring(optionStartIndex));
+        questionText = questionText.substring(0, optionStartIndex).trim();
+      }
+    }
+
+    // Add remaining lines as options
+    if (lines.length > 1) {
+      optionLines = [...optionLines, ...lines.slice(1)];
+    }
+
+    // Process option lines to ensure they're properly formatted
+    const processedOptions = optionLines.map((line) => {
+      // If line doesn't start with A-D, but contains A-D with delimiter, split it
+      if (
+        !line.match(/^[A-D](?:\.|\)|\s)/) &&
+        (line.includes("A)") ||
+          line.includes("A.") ||
+          line.includes("B)") ||
+          line.includes("B.") ||
+          line.includes("C)") ||
+          line.includes("C.") ||
+          line.includes("D)") ||
+          line.includes("D."))
+      ) {
+        // Find the first option indicator
+        const optionStartIndex = Math.min(
+          line.indexOf("A)") >= 0 ? line.indexOf("A)") : Infinity,
+          line.indexOf("A.") >= 0 ? line.indexOf("A.") : Infinity,
+          line.indexOf("B)") >= 0 ? line.indexOf("B)") : Infinity,
+          line.indexOf("B.") >= 0 ? line.indexOf("B.") : Infinity,
+          line.indexOf("C)") >= 0 ? line.indexOf("C)") : Infinity,
+          line.indexOf("C.") >= 0 ? line.indexOf("C.") : Infinity,
+          line.indexOf("D)") >= 0 ? line.indexOf("D)") : Infinity,
+          line.indexOf("D.") >= 0 ? line.indexOf("D.") : Infinity
+        );
+
+        if (optionStartIndex !== Infinity) {
+          return line.substring(optionStartIndex);
+        }
+      }
+      return line;
+    });
+
+    // Extract individual options with proper formatting
+    const options: string[] = [];
+    let currentOption = "";
+
+    processedOptions.forEach((line) => {
+      // If this line starts a new option
+      if (line.match(/^[A-D](?:\.|\)|\s)/)) {
+        if (currentOption) {
+          options.push(currentOption);
+        }
+        currentOption = line;
+      } else if (currentOption) {
+        // This is a continuation of the previous option
+        currentOption += " " + line;
+      } else {
+        // This is the first line and it's an option
+        currentOption = line;
+      }
+    });
+
+    // Add the last option
+    if (currentOption) {
+      options.push(currentOption);
+    }
+
+    return (
+      <div className="space-y-4 w-full">
+        <div className="text-base font-medium leading-relaxed break-words">
+          {questionText}
+        </div>
+
+        {options.length > 0 && (
+          <div className="grid grid-cols-1 gap-2 w-full">
+            {options.map((option, index) => {
+              // Enhanced regex to match different option formats: A., A), A
+              const optionMatch = option.match(/^([A-D])(?:\.|\)|)\s*(.+)$/);
+              if (!optionMatch)
+                return (
+                  <div key={index} className="text-sm">
+                    {option}
+                  </div>
+                );
+
+              const [_, letter, text] = optionMatch;
+
+              return (
+                <div
+                  key={index}
+                  className="flex items-start gap-2 p-2 rounded-md hover:bg-accent/50 transition-colors w-full"
+                >
+                  <Badge
+                    variant="outline"
+                    className="mt-0.5 h-6 w-6 flex-shrink-0 flex items-center justify-center p-0"
+                  >
+                    {letter}
+                  </Badge>
+                  <span className="text-sm break-words">{text}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Helper to determine if we have any completed model responses
+  const hasCompletedResponses = modelResponses.some(
+    (model) =>
+      model.status !== "Processing..." && !model.status.startsWith("Error:")
+  );
+
   return (
     <main className="flex flex-col min-h-screen w-full bg-background">
       <Sidebar />
@@ -374,60 +562,220 @@ Return ONLY the formatted text without any additional explanation.`,
 
         {/* Results Section */}
         <div className="flex flex-col gap-4 lg:w-3/5 mx-auto mb-16">
-          {/* OCR Text */}
+          {/* Stacked Results Display */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
+            className="w-full space-y-4"
           >
-            <Card className="p-4">
-              <p className="text-sm font-mono text-muted-foreground">
-                OCR:{" "}
-                {ocrText ||
-                  (isLoading ? "Loading..." : "Waiting for capture...")}
-              </p>
-            </Card>
-          </motion.div>
+            {/* Question Section */}
+            <div className="w-full">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 font-medium">
+                  <BookOpen className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg">Question</h3>
+                </div>
 
-          {/* Question Display */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Card className="p-4">
-              <p className="text-sm font-medium mb-4">
-                {question ||
-                  (isSettingsConfigured
-                    ? "Point your camera at a question and press SPACE to analyze"
-                    : "Click the settings icon in the top-right to configure API keys and models")}
-              </p>
-
-              {/* Dynamic Model Responses */}
-              <div className="space-y-2">
-                {!isSettingsConfigured ? (
-                  <p className="text-sm text-muted-foreground">
-                    No models configured
-                  </p>
-                ) : (
-                  modelResponses.map((model, index) => (
-                    <motion.div
-                      key={index}
-                      className="flex items-center gap-2 text-sm"
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.1 * index }}
-                    >
-                      <div className="text-blue-500">{model.name}:</div>
-                      <div className="text-muted-foreground">
-                        {model.status}
-                        {model.timeTaken && ` (${model.timeTaken.toFixed(2)}s)`}
-                      </div>
-                    </motion.div>
-                  ))
+                {(question || ocrText) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => copyToClipboard(question || ocrText)}
+                    className="h-8"
+                  >
+                    {copied ? (
+                      <Check className="h-4 w-4 mr-1" />
+                    ) : (
+                      <Copy className="h-4 w-4 mr-1" />
+                    )}
+                    {copied ? "Copied" : "Copy"}
+                  </Button>
                 )}
               </div>
-            </Card>
+
+              <Card className="overflow-hidden">
+                <div className="p-4 min-h-[100px]">
+                  {isLoading ? (
+                    <div className="flex flex-col items-center justify-center text-muted-foreground h-full">
+                      <Loader2 className="h-8 w-8 animate-spin mb-2" />
+                      <p>Processing image...</p>
+                    </div>
+                  ) : question ? (
+                    <div className="w-full">{formatQuestionDisplay()}</div>
+                  ) : (
+                    <div className="text-center text-muted-foreground h-full flex items-center justify-center">
+                      {isSettingsConfigured ? (
+                        <div className="flex flex-col items-center">
+                          <Camera className="h-8 w-8 mb-2 text-muted-foreground/70" />
+                          <p>
+                            Point your camera at a question and press SPACE to
+                            analyze
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center">
+                          <Sparkles className="h-8 w-8 mb-2 text-muted-foreground/70" />
+                          <p>
+                            Click the settings icon in the top-right to
+                            configure API keys and models
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </div>
+
+            {/* AI Answers Section */}
+            <div className="w-full">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 font-medium">
+                  <BrainCircuit className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg">AI Answers</h3>
+                  {modelResponses.some((m) => m.status === "Processing...") && (
+                    <Loader2 className="h-4 w-4 animate-spin ml-1 text-blue-500" />
+                  )}
+                </div>
+              </div>
+
+              <Card className="overflow-hidden">
+                <div className="min-h-[100px]">
+                  {isLoading ? (
+                    <div className="flex flex-col items-center justify-center text-muted-foreground h-[100px]">
+                      <Loader2 className="h-8 w-8 animate-spin mb-2" />
+                      <p>Processing image...</p>
+                    </div>
+                  ) : modelResponses.length > 0 ? (
+                    <div className="divide-y">
+                      {modelResponses.map((model, index) => {
+                        // Determine status styling
+                        let statusColor = "text-muted-foreground";
+                        let bgColor = "";
+
+                        if (model.status === "Processing...") {
+                          statusColor = "text-blue-500";
+                          bgColor = "bg-blue-500/5";
+                        } else if (model.status.startsWith("Error:")) {
+                          statusColor = "text-red-500";
+                          bgColor = "bg-red-500/5";
+                        } else {
+                          statusColor = "text-green-500";
+                          bgColor = "bg-green-500/5";
+                        }
+
+                        return (
+                          <motion.div
+                            key={index}
+                            className={cn(
+                              "flex flex-col sm:flex-row sm:items-center gap-2 p-4",
+                              bgColor
+                            )}
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 * index }}
+                          >
+                            <div className="font-medium min-w-[120px]">
+                              {model.name}:
+                            </div>
+
+                            <div className="flex-1 flex items-center gap-2">
+                              {model.status === "Processing..." ? (
+                                <div
+                                  className={cn(
+                                    "flex items-center gap-2",
+                                    statusColor
+                                  )}
+                                >
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                  <span>Processing...</span>
+                                </div>
+                              ) : model.status.startsWith("Error:") ? (
+                                <div className={statusColor}>
+                                  {model.status}
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <Badge className="text-lg font-bold">
+                                    {model.status}
+                                  </Badge>
+                                  {model.timeTaken && (
+                                    <span className="text-xs text-muted-foreground">
+                                      {model.timeTaken.toFixed(2)}s
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-[100px] text-muted-foreground">
+                      {question ? (
+                        <div className="flex flex-col items-center">
+                          <Loader2 className="h-8 w-8 mb-2 text-muted-foreground/70 animate-spin" />
+                          <p>Waiting for AI responses...</p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center">
+                          <BrainCircuit className="h-8 w-8 mb-2 text-muted-foreground/70" />
+                          <p>No model responses available</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </div>
+
+            {/* OCR Text Section (Collapsible) */}
+            <div className="w-full">
+              <details className="group">
+                <summary className="flex items-center justify-between mb-2 cursor-pointer list-none">
+                  <div className="flex items-center gap-2 font-medium">
+                    <Camera className="h-5 w-5 text-primary" />
+                    <h3 className="text-lg">OCR Text</h3>
+                  </div>
+                  <div className="text-muted-foreground text-sm group-open:rotate-180 transition-transform">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M4 6L8 10L12 6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </div>
+                </summary>
+
+                <Card className="overflow-hidden mt-2">
+                  <div className="p-4 min-h-[100px] font-mono text-sm whitespace-pre-wrap break-words">
+                    {isLoading ? (
+                      <div className="flex flex-col items-center justify-center text-muted-foreground h-full">
+                        <Loader2 className="h-8 w-8 animate-spin mb-2" />
+                        <p>Processing image...</p>
+                      </div>
+                    ) : ocrText ? (
+                      ocrText
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-muted-foreground">
+                        No OCR text available
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              </details>
+            </div>
           </motion.div>
         </div>
       </motion.div>
