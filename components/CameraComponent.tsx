@@ -212,14 +212,14 @@ export default function CameraComponent({
 
   return (
     <motion.div
-      className="relative w-full lg:w-3/5 mx-auto aspect-video bg-muted rounded-lg overflow-hidden mb-6"
+      className="bg-muted relative mx-auto mb-6 aspect-video w-full overflow-hidden rounded-lg lg:w-3/5"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: 0.1 }}
     >
       {error ? (
-        <div className="absolute inset-0 flex flex-col items-center justify-center bg-destructive/20">
-          <p className="text-destructive text-sm mb-3">{error}</p>
+        <div className="bg-destructive/20 absolute inset-0 flex flex-col items-center justify-center">
+          <p className="text-destructive mb-3 text-sm">{error}</p>
           <Button
             variant="outline"
             size="sm"
@@ -232,7 +232,7 @@ export default function CameraComponent({
       ) : stream ? (
         <canvas
           ref={canvasRef}
-          className="w-full h-full"
+          className="h-full w-full"
           onClick={() => {
             // Try to play video on user interaction (helps with Safari)
             if (
@@ -247,7 +247,7 @@ export default function CameraComponent({
         />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
-          <Camera className="w-16 h-16 text-muted-foreground" />
+          <Camera className="text-muted-foreground h-16 w-16" />
         </div>
       )}
 
@@ -259,9 +259,9 @@ export default function CameraComponent({
         transition={{ delay: 0.2 }}
       >
         <div
-          className={`px-3 py-1.5 ${statusClass} rounded-md text-sm font-medium flex items-center gap-2`}
+          className={`px-3 py-1.5 ${statusClass} flex items-center gap-2 rounded-md text-sm font-medium`}
         >
-          {isLoading && <Loader2 className="w-3 h-3 animate-spin" />}
+          {isLoading && <Loader2 className="h-3 w-3 animate-spin" />}
           {statusText}
         </div>
       </motion.div>
@@ -274,17 +274,17 @@ export default function CameraComponent({
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="p-3 bg-background/80 backdrop-blur-sm">
+          <Card className="bg-background/80 p-3 backdrop-blur-sm">
             <div className="flex flex-col gap-2 text-xs">
-              <div className="flex items-center gap-2 text-primary">
-                <KeySquare className="w-4 h-4" />
+              <div className="text-primary flex items-center gap-2">
+                <KeySquare className="h-4 w-4" />
                 <span>Controls:</span>
               </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Space className="w-3 h-3" /> Capture & Analyze
+              <div className="text-muted-foreground flex items-center gap-2">
+                <Space className="h-3 w-3" /> Capture & Analyze
               </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <X className="w-3 h-3" /> Clear Results
+              <div className="text-muted-foreground flex items-center gap-2">
+                <X className="h-3 w-3" /> Clear Results
               </div>
             </div>
           </Card>

@@ -34,14 +34,14 @@ export default function Home() {
   });
 
   return (
-    <main className="flex flex-col min-h-screen w-full relative overflow-hidden">
+    <main className="relative flex min-h-screen w-full flex-col overflow-hidden">
       <GridPattern />
       <Sidebar />
-      <div className="px-6 lg:px-16 pt-12 pb-8 relative z-10">
+      <div className="relative z-10 px-6 pt-12 pb-8 lg:px-16">
         <Header />
       </div>
       <motion.div
-        className="flex-1 px-6 lg:px-16 relative z-10"
+        className="relative z-10 flex-1 px-6 lg:px-16"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -55,7 +55,7 @@ export default function Home() {
         />
 
         {/* Results Section */}
-        <div className="flex flex-col gap-4 lg:w-3/5 mx-auto mb-16">
+        <div className="mx-auto mb-16 flex flex-col gap-4 lg:w-3/5">
           {/* Stacked Results Display */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}

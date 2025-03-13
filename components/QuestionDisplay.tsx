@@ -34,7 +34,7 @@ export default function QuestionDisplay({
 
     if (question === "No question detected.") {
       return (
-        <div className="text-center text-muted-foreground italic">
+        <div className="text-muted-foreground text-center italic">
           No question detected in the image
         </div>
       );
@@ -127,13 +127,13 @@ export default function QuestionDisplay({
     }
 
     return (
-      <div className="space-y-4 w-full">
-        <div className="text-base font-medium leading-relaxed break-words">
+      <div className="w-full space-y-4">
+        <div className="text-base leading-relaxed font-medium break-words">
           {questionText}
         </div>
 
         {options.length > 0 && (
-          <div className="grid grid-cols-1 gap-2 w-full">
+          <div className="grid w-full grid-cols-1 gap-2">
             {options.map((option, index) => {
               // Enhanced regex to match different option formats: A., A), A
               const optionMatch = option.match(/^([A-D])(?:\.|\)|)\s*(.+)$/);
@@ -149,11 +149,11 @@ export default function QuestionDisplay({
               return (
                 <div
                   key={index}
-                  className="flex items-start gap-2 p-2 rounded-md hover:bg-accent/50 transition-colors w-full"
+                  className="hover:bg-accent/50 flex w-full items-start gap-2 rounded-md p-2 transition-colors"
                 >
                   <Badge
                     variant="outline"
-                    className="mt-0.5 h-6 w-6 flex-shrink-0 flex items-center justify-center p-0"
+                    className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center p-0"
                   >
                     {letter}
                   </Badge>
@@ -169,9 +169,9 @@ export default function QuestionDisplay({
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between mb-2">
+      <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2 font-medium">
-          <BookOpen className="h-5 w-5 text-primary" />
+          <BookOpen className="text-primary h-5 w-5" />
           <h3 className="text-lg text-white">Question</h3>
         </div>
 
@@ -183,9 +183,9 @@ export default function QuestionDisplay({
             className="h-8"
           >
             {copied ? (
-              <Check className="h-4 w-4 mr-1" />
+              <Check className="mr-1 h-4 w-4" />
             ) : (
-              <Copy className="h-4 w-4 mr-1" />
+              <Copy className="mr-1 h-4 w-4" />
             )}
             {copied ? "Copied" : "Copy"}
           </Button>
@@ -193,26 +193,26 @@ export default function QuestionDisplay({
       </div>
 
       <Card className="overflow-hidden">
-        <div className="p-4 min-h-[100px]">
+        <div className="min-h-[100px] p-4">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center text-muted-foreground h-full">
-              <Loader2 className="h-8 w-8 animate-spin mb-2" />
+            <div className="text-muted-foreground flex h-full flex-col items-center justify-center">
+              <Loader2 className="mb-2 h-8 w-8 animate-spin" />
               <p>Processing image...</p>
             </div>
           ) : question ? (
             <div className="w-full">{formatQuestionDisplay()}</div>
           ) : (
-            <div className="text-center text-muted-foreground h-full flex items-center justify-center">
+            <div className="text-muted-foreground flex h-full items-center justify-center text-center">
               {isSettingsConfigured ? (
                 <div className="flex flex-col items-center">
-                  <Camera className="h-8 w-8 mb-2 text-muted-foreground/70" />
+                  <Camera className="text-muted-foreground/70 mb-2 h-8 w-8" />
                   <p>
                     Point your camera at a question and press SPACE to analyze
                   </p>
                 </div>
               ) : (
                 <div className="flex flex-col items-center">
-                  <Sparkles className="h-8 w-8 mb-2 text-muted-foreground/70" />
+                  <Sparkles className="text-muted-foreground/70 mb-2 h-8 w-8" />
                   <p>
                     Click the settings icon in the top-right to configure API
                     keys and models

@@ -23,13 +23,13 @@ export default function MobileActionButtons({
 
   return (
     <motion.div
-      className="fixed bottom-4 inset-x-6 grid grid-cols-2 gap-4 z-20"
+      className="fixed inset-x-6 bottom-4 z-20 grid grid-cols-2 gap-4"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5 }}
     >
       <Button size="lg" className="w-full" variant="outline" onClick={clear}>
-        <X className="w-4 h-4 mr-2" />
+        <X className="mr-2 h-4 w-4" />
         Clear
       </Button>
       <Button
@@ -40,12 +40,12 @@ export default function MobileActionButtons({
       >
         {isLoading ? (
           <>
-            <Loader2 className="animate-spin -ml-1 mr-3 h-5 w-5" />
+            <Loader2 className="mr-3 -ml-1 h-5 w-5 animate-spin" />
             Loading...
           </>
         ) : (
           <>
-            <Space className="w-4 h-4 mr-2" />
+            <Space className="mr-2 h-4 w-4" />
             Capture
           </>
         )}

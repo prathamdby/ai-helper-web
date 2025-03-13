@@ -81,7 +81,7 @@ export function Sidebar() {
         onClick={() => setIsOpen(!isOpen)}
         variant="outline"
         size="icon"
-        className="fixed left-4 top-4 z-50 bg-white/10 border-white/20 text-white"
+        className="fixed top-4 left-4 z-50 border-white/20 bg-white/10 text-white"
       >
         {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </Button>
@@ -99,7 +99,7 @@ export function Sidebar() {
 
       {/* Sidebar */}
       <motion.div
-        className={`fixed left-0 top-0 z-[101] flex h-full w-80 flex-col border-r border-white/[0.08] bg-black/20 p-6 backdrop-blur-lg transition-transform duration-300 ${
+        className={`fixed top-0 left-0 z-[101] flex h-full w-80 flex-col border-r border-white/[0.08] bg-black/20 p-6 backdrop-blur-lg transition-transform duration-300 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -177,7 +177,7 @@ export function Sidebar() {
                           : "border-white/10 bg-white/5"
                       } p-3`}
                     >
-                      <div className="flex items-center min-w-0 w-full">
+                      <div className="flex w-full min-w-0 items-center">
                         <input
                           type="checkbox"
                           id={model}
@@ -200,7 +200,7 @@ export function Sidebar() {
                               });
                             }
                           }}
-                          className="mr-3 h-4 w-4 accent-primary"
+                          className="accent-primary mr-3 h-4 w-4"
                         />
                         <label
                           htmlFor={model}
@@ -217,11 +217,11 @@ export function Sidebar() {
         </div>
 
         {/* Clear settings button */}
-        <div className="mt-6 pt-4 border-t border-white/10">
+        <div className="mt-6 border-t border-white/10 pt-4">
           <Button
             onClick={handleClearSettings}
             variant="outline"
-            className="w-full h-10 text-destructive hover:text-destructive border-destructive/20 hover:bg-destructive/10"
+            className="text-destructive hover:text-destructive border-destructive/20 hover:bg-destructive/10 h-10 w-full"
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Clear Settings

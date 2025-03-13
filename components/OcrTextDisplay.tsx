@@ -21,14 +21,14 @@ export default function OcrTextDisplay({
       <div className="mb-2">
         <button
           onClick={() => setIsOcrSectionOpen(!isOcrSectionOpen)}
-          className="flex items-center justify-between w-full cursor-pointer outline-none"
+          className="flex w-full cursor-pointer items-center justify-between outline-none"
         >
           <div className="flex items-center gap-2 font-medium">
-            <Camera className="h-5 w-5 text-primary flex-shrink-0" />
+            <Camera className="text-primary h-5 w-5 flex-shrink-0" />
             <h3 className="text-lg text-white">OCR Text</h3>
           </div>
           <div
-            className={`text-white text-sm transition-transform ${
+            className={`text-sm text-white transition-transform ${
               isOcrSectionOpen ? "rotate-180" : ""
             }`}
           >
@@ -53,17 +53,17 @@ export default function OcrTextDisplay({
       </div>
 
       {isOcrSectionOpen && (
-        <Card className="overflow-hidden mt-2">
-          <div className="p-4 min-h-[100px] font-mono text-sm whitespace-pre-wrap break-words">
+        <Card className="mt-2 overflow-hidden">
+          <div className="min-h-[100px] p-4 font-mono text-sm break-words whitespace-pre-wrap">
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center text-muted-foreground h-full">
-                <Loader2 className="h-8 w-8 animate-spin mb-2" />
+              <div className="text-muted-foreground flex h-full flex-col items-center justify-center">
+                <Loader2 className="mb-2 h-8 w-8 animate-spin" />
                 <p>Processing image...</p>
               </div>
             ) : ocrText ? (
               ocrText
             ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
+              <div className="text-muted-foreground flex h-full items-center justify-center">
                 No OCR text available
               </div>
             )}
