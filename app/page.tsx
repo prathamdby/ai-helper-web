@@ -24,12 +24,12 @@ export default function Home() {
   // State for camera error - only used for passing to CaptureLogic
   const [, setError] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Use the capture logic
   const { capture, clear } = CaptureLogic({
     canvasRef: canvasRef as React.RefObject<HTMLCanvasElement>,
-    videoRef,
+    videoRef: videoRef as React.RefObject<HTMLVideoElement>,
     setError,
   });
 

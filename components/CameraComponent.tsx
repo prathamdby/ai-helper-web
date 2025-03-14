@@ -23,14 +23,10 @@ export default function CameraComponent({
 }: CameraComponentProps) {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-
-  // Check if running as PWA in standalone mode
-  const isPwa =
-    typeof window !== "undefined" &&
-    (window.matchMedia("(display-mode: standalone)").matches ||
-      (window.navigator as any).standalone === true);
+  const streamRef = useRef<MediaStream | null>(null);
+  const refreshTimerRef = useRef<number | null>(null);
 
   // Function to restart video stream
   const restartVideoStream = async () => {
@@ -39,28 +35,24 @@ export default function CameraComponent({
       setError(null);
 
       // Stop any existing stream
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => {
+          track.stop();
+        });
+        streamRef.current = null;
       }
 
-      // Use lower resolution for PWA to improve performance
-      const videoConstraints = isPwa
-        ? {
-            facingMode: "environment",
-            width: { ideal: 640 },
-            height: { ideal: 480 },
-          }
-        : {
-            facingMode: "environment",
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          };
-
-      // Get a new stream
+      // Get a new stream with consistent constraints
       const newStream = await navigator.mediaDevices.getUserMedia({
-        video: videoConstraints,
+        video: {
+          facingMode: "environment",
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
       });
 
+      // Store stream in ref to ensure proper cleanup
+      streamRef.current = newStream;
       setStream(newStream);
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -71,149 +63,136 @@ export default function CameraComponent({
     }
   };
 
+  // Initialize camera stream
   useEffect(() => {
+    let mounted = true;
+
     const getCameraStream = async () => {
       try {
-        // Use lower resolution for PWA to improve performance
-        const videoConstraints = isPwa
-          ? {
-              facingMode: "environment",
-              width: { ideal: 640 },
-              height: { ideal: 480 },
-            }
-          : {
-              facingMode: "environment",
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
-            };
+        // Stop any existing stream first
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((track) => {
+            track.stop();
+          });
+          streamRef.current = null;
+        }
 
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: videoConstraints,
+          video: {
+            facingMode: "environment",
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
         });
-        setStream(stream);
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message);
+
+        // Only set state if component is still mounted
+        if (mounted) {
+          streamRef.current = stream;
+          setStream(stream);
         } else {
-          setError("An unknown error occurred");
+          // If unmounted, clean up the stream
+          stream.getTracks().forEach((track) => {
+            track.stop();
+          });
+        }
+      } catch (err: unknown) {
+        if (mounted) {
+          if (err instanceof Error) {
+            setError(err.message);
+          } else {
+            setError("An unknown error occurred");
+          }
         }
       }
     };
 
     if (isSettingsConfigured) {
       getCameraStream();
-    }
 
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
-      }
-    };
-  }, [isSettingsConfigured, stream, isPwa]);
-
-  useEffect(() => {
-    const video = document.createElement("video");
-    video.muted = true;
-    video.playsInline = true;
-    video.setAttribute("autoplay", "");
-    videoRef.current = video;
-
-    if (stream) {
-      video.srcObject = stream;
-      video.onloadedmetadata = () => {
-        // Handle play as a promise with proper error handling
-        const playVideo = async () => {
-          try {
-            await video.play();
-          } catch (err) {
-            console.error("Error playing video:", err);
-            setError(
-              "Browser blocked video autoplay. Click 'Restart Camera' to try again."
-            );
-          }
-        };
-
-        playVideo();
-
-        // Set canvas dimensions once based on video dimensions
-        if (canvasRef.current) {
-          canvasRef.current.width = video.videoWidth;
-          canvasRef.current.height = video.videoHeight;
+      // Set up periodic camera refresh to prevent lag buildup
+      // Only in PWA or mobile contexts where lag is more likely
+      if (
+        typeof window !== "undefined" &&
+        (window.matchMedia("(display-mode: standalone)").matches ||
+          (window.navigator as any).standalone === true ||
+          isMobile)
+      ) {
+        // Clear any existing timer
+        if (refreshTimerRef.current) {
+          window.clearInterval(refreshTimerRef.current);
         }
 
-        let animationFrameId: number;
-        let lastFrameTime = 0;
-        // Use lower frame rate for PWA to improve performance
-        const frameInterval = isPwa ? 1000 / 20 : 1000 / 30; // 20fps for PWA, 30fps otherwise
-
-        const renderFrame = (timestamp: number) => {
-          if (!video.paused && !video.ended && canvasRef.current) {
-            // Throttle frame rate for better performance
-            if (timestamp - lastFrameTime < frameInterval) {
-              animationFrameId = requestAnimationFrame(renderFrame);
-              return;
-            }
-
-            lastFrameTime = timestamp;
-
-            const ctx = canvasRef.current.getContext("2d", { alpha: false });
-            if (ctx) {
-              const canvasWidth = canvasRef.current.width;
-              const canvasHeight = canvasRef.current.height;
-              const videoWidth = video.videoWidth;
-              const videoHeight = video.videoHeight;
-
-              const canvasAspectRatio = canvasWidth / canvasHeight;
-              const videoAspectRatio = videoWidth / videoHeight;
-
-              let sourceX = 0;
-              let sourceY = 0;
-              let sourceWidth = videoWidth;
-              let sourceHeight = videoHeight;
-              const destX = 0;
-              const destY = 0;
-              const destWidth = canvasWidth;
-              const destHeight = canvasHeight;
-
-              if (canvasAspectRatio > videoAspectRatio) {
-                // Canvas is wider than the video, so crop the top and bottom
-                sourceHeight = videoWidth / canvasAspectRatio;
-                sourceY = (videoHeight - sourceHeight) / 2;
-              } else {
-                // Canvas is taller than the video, so crop the left and right
-                sourceWidth = videoHeight * canvasAspectRatio;
-                sourceX = (videoWidth - sourceWidth) / 2;
-              }
-
-              // Use optimized drawing
-              ctx.drawImage(
-                video,
-                sourceX,
-                sourceY,
-                sourceWidth,
-                sourceHeight,
-                destX,
-                destY,
-                destWidth,
-                destHeight
-              );
-            }
+        // Refresh camera every 30 seconds to prevent lag buildup
+        refreshTimerRef.current = window.setInterval(() => {
+          if (!isLoading && mounted) {
+            console.log("Performing periodic camera refresh");
+            getCameraStream();
           }
-          animationFrameId = requestAnimationFrame(renderFrame);
-        };
+        }, 30000); // 30 seconds
+      }
+    }
 
-        animationFrameId = requestAnimationFrame(renderFrame);
+    // Cleanup function
+    return () => {
+      mounted = false;
 
-        // Clean up function
-        return () => {
-          if (animationFrameId) {
-            cancelAnimationFrame(animationFrameId);
-          }
-        };
+      // Clear refresh timer
+      if (refreshTimerRef.current) {
+        window.clearInterval(refreshTimerRef.current);
+        refreshTimerRef.current = null;
+      }
+
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => {
+          track.stop();
+        });
+        streamRef.current = null;
+      }
+    };
+  }, [isSettingsConfigured, isMobile, isLoading]);
+
+  // Set video srcObject when stream changes
+  useEffect(() => {
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+
+      // Add event listeners to handle potential errors
+      const handleVideoError = () => {
+        setError("Video playback error. Please try restarting the camera.");
+      };
+
+      // Handle stalled or frozen video
+      const handleVideoStalled = () => {
+        console.log("Video playback stalled, attempting recovery");
+        if (videoRef.current) {
+          // Try to recover by restarting playback
+          videoRef.current.pause();
+          setTimeout(() => {
+            if (videoRef.current) {
+              videoRef.current.play().catch((err) => {
+                console.error("Failed to restart stalled video:", err);
+              });
+            }
+          }, 100);
+        }
+      };
+
+      videoRef.current.addEventListener("error", handleVideoError);
+      videoRef.current.addEventListener("stalled", handleVideoStalled);
+      videoRef.current.addEventListener("freeze", handleVideoStalled);
+
+      return () => {
+        if (videoRef.current) {
+          videoRef.current.removeEventListener("error", handleVideoError);
+          videoRef.current.removeEventListener("stalled", handleVideoStalled);
+          videoRef.current.removeEventListener("freeze", handleVideoStalled);
+          videoRef.current.srcObject = null;
+        }
       };
     }
   }, [stream]);
 
+  // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const keyActions = { Space: capture, KeyX: clear };
@@ -280,21 +259,22 @@ export default function CameraComponent({
           </Button>
         </div>
       ) : stream ? (
-        <canvas
-          ref={canvasRef}
-          className="h-full w-full"
-          onClick={() => {
-            // Try to play video on user interaction (helps with Safari)
-            if (
-              videoRef.current &&
-              (videoRef.current.paused || videoRef.current.ended)
-            ) {
-              videoRef.current.play().catch((err) => {
-                console.error("Failed to play video on click:", err);
-              });
-            }
-          }}
-        />
+        <>
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="h-full w-full object-cover"
+            style={{
+              transform: "translateZ(0)", // Hardware acceleration hint
+              backfaceVisibility: "hidden", // Reduce composite layers
+              willChange: "transform", // Hint for browser optimization
+            }}
+          />
+          {/* Hidden canvas for image capture */}
+          <canvas ref={canvasRef} className="hidden" />
+        </>
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
           <Camera className="text-muted-foreground h-16 w-16" />

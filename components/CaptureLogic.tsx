@@ -6,7 +6,7 @@ import { getAllModelResponses } from "@/lib/model-responses";
 
 interface CaptureLogicProps {
   canvasRef: React.RefObject<HTMLCanvasElement>;
-  videoRef: React.RefObject<HTMLVideoElement | null>;
+  videoRef: React.RefObject<HTMLVideoElement>;
   setError: (error: string | null) => void;
 }
 
@@ -24,34 +24,34 @@ export default function CaptureLogic({
     // Clear any previous error
     setError(null);
 
-    if (!canvasRef.current) {
+    if (!canvasRef.current || !videoRef.current) {
       setError("Camera not available.");
       setLoading(false);
       return;
     }
 
     try {
-      const ctx = canvasRef.current.getContext("2d");
+      // Set canvas dimensions to match video
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+
+      // Set canvas size to match video dimensions
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      // Draw the current video frame to the canvas
+      const ctx = canvas.getContext("2d");
       if (!ctx) {
         setError("Could not get canvas context.");
         setLoading(false);
         return;
       }
 
-      // If video is paused or ended, try to restart it
-      if (
-        videoRef.current &&
-        (videoRef.current.paused || videoRef.current.ended)
-      ) {
-        try {
-          await videoRef.current.play();
-        } catch (err) {
-          console.error("Failed to restart video on capture:", err);
-          // Continue anyway, we'll use whatever is on the canvas
-        }
-      }
+      // Draw the video frame to the canvas
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      const imageData = canvasRef.current.toDataURL("image/jpeg");
+      // Get the image data from the canvas
+      const imageData = canvas.toDataURL("image/jpeg");
 
       const response = await axios.post(
         "https://openrouter.ai/api/v1/chat/completions",
