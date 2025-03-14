@@ -23,7 +23,7 @@ export default function MobileActionButtons({
 
   return (
     <motion.div
-      className="fixed inset-x-6 bottom-4 z-20 grid grid-cols-2 gap-4"
+      className="fixed inset-x-6 bottom-8 z-20 grid grid-cols-2 gap-4 pb-4"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5 }}

@@ -26,6 +26,12 @@ export default function CameraComponent({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
+  // Check if running as PWA in standalone mode
+  const isPwa =
+    typeof window !== "undefined" &&
+    (window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as any).standalone === true);
+
   // Function to restart video stream
   const restartVideoStream = async () => {
     try {
@@ -37,11 +43,22 @@ export default function CameraComponent({
         stream.getTracks().forEach((track) => track.stop());
       }
 
+      // Use lower resolution for PWA to improve performance
+      const videoConstraints = isPwa
+        ? {
+            facingMode: "environment",
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+          }
+        : {
+            facingMode: "environment",
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          };
+
       // Get a new stream
       const newStream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: "environment",
-        },
+        video: videoConstraints,
       });
 
       setStream(newStream);
@@ -57,10 +74,21 @@ export default function CameraComponent({
   useEffect(() => {
     const getCameraStream = async () => {
       try {
+        // Use lower resolution for PWA to improve performance
+        const videoConstraints = isPwa
+          ? {
+              facingMode: "environment",
+              width: { ideal: 640 },
+              height: { ideal: 480 },
+            }
+          : {
+              facingMode: "environment",
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+            };
+
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: "environment",
-          },
+          video: videoConstraints,
         });
         setStream(stream);
       } catch (err: unknown) {
@@ -81,7 +109,7 @@ export default function CameraComponent({
         stream.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [isSettingsConfigured, stream]);
+  }, [isSettingsConfigured, stream, isPwa]);
 
   useEffect(() => {
     const video = document.createElement("video");
@@ -107,16 +135,29 @@ export default function CameraComponent({
 
         playVideo();
 
-        const renderFrame = () => {
-          if (!video.paused && !video.ended && canvasRef.current) {
-            const ctx = canvasRef.current.getContext("2d");
-            if (ctx) {
-              // Make sure canvas dimensions are set correctly
-              if (!canvasRef.current.width || !canvasRef.current.height) {
-                canvasRef.current.width = video.videoWidth;
-                canvasRef.current.height = video.videoHeight;
-              }
+        // Set canvas dimensions once based on video dimensions
+        if (canvasRef.current) {
+          canvasRef.current.width = video.videoWidth;
+          canvasRef.current.height = video.videoHeight;
+        }
 
+        let animationFrameId: number;
+        let lastFrameTime = 0;
+        // Use lower frame rate for PWA to improve performance
+        const frameInterval = isPwa ? 1000 / 20 : 1000 / 30; // 20fps for PWA, 30fps otherwise
+
+        const renderFrame = (timestamp: number) => {
+          if (!video.paused && !video.ended && canvasRef.current) {
+            // Throttle frame rate for better performance
+            if (timestamp - lastFrameTime < frameInterval) {
+              animationFrameId = requestAnimationFrame(renderFrame);
+              return;
+            }
+
+            lastFrameTime = timestamp;
+
+            const ctx = canvasRef.current.getContext("2d", { alpha: false });
+            if (ctx) {
               const canvasWidth = canvasRef.current.width;
               const canvasHeight = canvasRef.current.height;
               const videoWidth = video.videoWidth;
@@ -144,6 +185,7 @@ export default function CameraComponent({
                 sourceX = (videoWidth - sourceWidth) / 2;
               }
 
+              // Use optimized drawing
               ctx.drawImage(
                 video,
                 sourceX,
@@ -157,9 +199,17 @@ export default function CameraComponent({
               );
             }
           }
-          requestAnimationFrame(renderFrame);
+          animationFrameId = requestAnimationFrame(renderFrame);
         };
-        renderFrame();
+
+        animationFrameId = requestAnimationFrame(renderFrame);
+
+        // Clean up function
+        return () => {
+          if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+          }
+        };
       };
     }
   }, [stream]);
