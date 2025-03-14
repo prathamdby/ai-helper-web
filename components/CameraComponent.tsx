@@ -8,23 +8,28 @@ import { motion } from "framer-motion";
 
 interface CameraComponentProps {
   isMobile: boolean;
-  capture: () => Promise<void>;
-  clear: () => void;
+  videoRef: React.RefObject<HTMLVideoElement | null>;
+  canvasRef: React.RefObject<HTMLCanvasElement | null>;
+  error: string | null;
+  setError: (error: string | null) => void;
   isLoading: boolean;
   isSettingsConfigured: boolean;
+  capture: () => Promise<void>;
+  clear: () => void;
 }
 
 export default function CameraComponent({
   isMobile,
-  capture,
-  clear,
+  videoRef,
+  canvasRef,
+  error,
+  setError,
   isLoading,
   isSettingsConfigured,
+  capture,
+  clear,
 }: CameraComponentProps) {
   const [stream, setStream] = useState<MediaStream | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const refreshTimerRef = useRef<number | null>(null);
 
@@ -114,7 +119,9 @@ export default function CameraComponent({
       if (
         typeof window !== "undefined" &&
         (window.matchMedia("(display-mode: standalone)").matches ||
-          (window.navigator as any).standalone === true ||
+          ("standalone" in window.navigator &&
+            (window.navigator as Navigator & { standalone?: boolean })
+              .standalone === true) ||
           isMobile)
       ) {
         // Clear any existing timer
@@ -149,12 +156,14 @@ export default function CameraComponent({
         streamRef.current = null;
       }
     };
-  }, [isSettingsConfigured, isMobile, isLoading]);
+  }, [isSettingsConfigured, isMobile, isLoading, setError]);
 
   // Set video srcObject when stream changes
   useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
+    const currentVideoRef = videoRef.current;
+
+    if (currentVideoRef && stream) {
+      currentVideoRef.srcObject = stream;
 
       // Add event listeners to handle potential errors
       const handleVideoError = () => {
@@ -164,12 +173,12 @@ export default function CameraComponent({
       // Handle stalled or frozen video
       const handleVideoStalled = () => {
         console.log("Video playback stalled, attempting recovery");
-        if (videoRef.current) {
+        if (currentVideoRef) {
           // Try to recover by restarting playback
-          videoRef.current.pause();
+          currentVideoRef.pause();
           setTimeout(() => {
-            if (videoRef.current) {
-              videoRef.current.play().catch((err) => {
+            if (currentVideoRef) {
+              currentVideoRef.play().catch((err) => {
                 console.error("Failed to restart stalled video:", err);
               });
             }
@@ -177,20 +186,20 @@ export default function CameraComponent({
         }
       };
 
-      videoRef.current.addEventListener("error", handleVideoError);
-      videoRef.current.addEventListener("stalled", handleVideoStalled);
-      videoRef.current.addEventListener("freeze", handleVideoStalled);
+      currentVideoRef.addEventListener("error", handleVideoError);
+      currentVideoRef.addEventListener("stalled", handleVideoStalled);
+      currentVideoRef.addEventListener("freeze", handleVideoStalled);
 
       return () => {
-        if (videoRef.current) {
-          videoRef.current.removeEventListener("error", handleVideoError);
-          videoRef.current.removeEventListener("stalled", handleVideoStalled);
-          videoRef.current.removeEventListener("freeze", handleVideoStalled);
-          videoRef.current.srcObject = null;
+        if (currentVideoRef) {
+          currentVideoRef.removeEventListener("error", handleVideoError);
+          currentVideoRef.removeEventListener("stalled", handleVideoStalled);
+          currentVideoRef.removeEventListener("freeze", handleVideoStalled);
+          currentVideoRef.srcObject = null;
         }
       };
     }
-  }, [stream]);
+  }, [stream, videoRef, setError]);
 
   // Handle keyboard shortcuts
   useEffect(() => {

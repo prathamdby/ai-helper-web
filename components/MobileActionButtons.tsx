@@ -22,34 +22,48 @@ export default function MobileActionButtons({
   }
 
   return (
-    <motion.div
-      className="fixed inset-x-6 bottom-8 z-20 grid grid-cols-2 gap-4 pb-4"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5 }}
-    >
-      <Button size="lg" className="w-full" variant="outline" onClick={clear}>
-        <X className="mr-2 h-4 w-4" />
-        Clear
-      </Button>
-      <Button
-        size="lg"
+    <div className="pointer-events-auto fixed inset-x-6 bottom-8 z-50 flex items-center justify-between gap-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
         className="w-full"
-        onClick={capture}
-        disabled={isLoading}
       >
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-3 -ml-1 h-5 w-5 animate-spin" />
-            Loading...
-          </>
-        ) : (
-          <>
-            <Space className="mr-2 h-4 w-4" />
-            Capture
-          </>
-        )}
-      </Button>
-    </motion.div>
+        <Button
+          size="lg"
+          className="relative w-full touch-manipulation select-none"
+          variant="outline"
+          onClick={clear}
+        >
+          <X className="mr-2 h-4 w-4" />
+          Clear
+        </Button>
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="w-full"
+      >
+        <Button
+          size="lg"
+          className="relative w-full touch-manipulation select-none"
+          onClick={capture}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-3 -ml-1 h-5 w-5 animate-spin" />
+              Loading...
+            </>
+          ) : (
+            <>
+              <Space className="mr-2 h-4 w-4" />
+              Capture
+            </>
+          )}
+        </Button>
+      </motion.div>
+    </div>
   );
 }

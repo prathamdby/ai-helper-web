@@ -21,15 +21,14 @@ export default function Home() {
   const { ocrText, question, modelResponses, isSettingsConfigured, isLoading } =
     useStore();
 
-  // State for camera error - only used for passing to CaptureLogic
-  const [, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Use the capture logic
+  // Use the capture logic with proper ref typing
   const { capture, clear } = CaptureLogic({
-    canvasRef: canvasRef as React.RefObject<HTMLCanvasElement>,
-    videoRef: videoRef as React.RefObject<HTMLVideoElement>,
+    canvasRef,
+    videoRef,
     setError,
   });
 
@@ -48,10 +47,14 @@ export default function Home() {
         {/* Camera Feed Container */}
         <CameraComponent
           isMobile={isMobile}
-          capture={capture}
-          clear={clear}
+          videoRef={videoRef}
+          canvasRef={canvasRef}
+          error={error}
+          setError={setError}
           isLoading={isLoading}
           isSettingsConfigured={isSettingsConfigured}
+          capture={capture}
+          clear={clear}
         />
 
         {/* Results Section */}

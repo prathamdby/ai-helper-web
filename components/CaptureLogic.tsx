@@ -5,8 +5,8 @@ import useStore from "@/lib/store";
 import { getAllModelResponses } from "@/lib/model-responses";
 
 interface CaptureLogicProps {
-  canvasRef: React.RefObject<HTMLCanvasElement>;
-  videoRef: React.RefObject<HTMLVideoElement>;
+  canvasRef: React.RefObject<HTMLCanvasElement | null>;
+  videoRef: React.RefObject<HTMLVideoElement | null>;
   setError: (error: string | null) => void;
 }
 
@@ -24,17 +24,16 @@ export default function CaptureLogic({
     // Clear any previous error
     setError(null);
 
-    if (!canvasRef.current || !videoRef.current) {
+    const canvas = canvasRef.current;
+    const video = videoRef.current;
+
+    if (!canvas || !video) {
       setError("Camera not available.");
       setLoading(false);
       return;
     }
 
     try {
-      // Set canvas dimensions to match video
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-
       // Set canvas size to match video dimensions
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
