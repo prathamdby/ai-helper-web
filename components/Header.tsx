@@ -14,6 +14,16 @@ export const Header = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{
+          duration: 0.5,
+          ease: [0.32, 0.72, 0, 1],
+          opacity: { duration: 0.3 },
+        }}
+        style={{
+          willChange: "opacity, transform",
+          translateZ: 0,
+          backfaceVisibility: "hidden",
+        }}
         className="mb-8 text-center"
       >
         <h1 className="mb-2 text-4xl leading-tight font-black tracking-tight text-white sm:text-5xl md:text-6xl lg:mb-4 lg:text-[72px] lg:leading-[1.15]">

@@ -12,21 +12,21 @@ const Footer = () => {
           <Link
             href="https://github.com/prathamdby"
             target="_blank"
-            className="text-white/40 transition-colors hover:text-white"
+            className="[transform:translate3d(0,0,0)] text-white/40 transition-colors duration-200 [will-change:color] hover:text-white"
           >
             <Github className="h-5 w-5" />
           </Link>
           <Link
             href="https://twitter.com/prathamdby"
             target="_blank"
-            className="text-white/40 transition-colors hover:text-white"
+            className="[transform:translate3d(0,0,0)] text-white/40 transition-colors duration-200 [will-change:color] hover:text-white"
           >
             <Twitter className="h-5 w-5" />
           </Link>
           <Link
             href="https://linkedin.com/in/prathamdby"
             target="_blank"
-            className="text-white/40 transition-colors hover:text-white"
+            className="[transform:translate3d(0,0,0)] text-white/40 transition-colors duration-200 [will-change:color] hover:text-white"
           >
             <Linkedin className="h-5 w-5" />
           </Link>

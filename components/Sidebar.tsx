@@ -93,16 +93,29 @@ export function Sidebar() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] bg-black/10 backdrop-blur-sm transition-opacity"
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="fixed inset-0 z-[100] bg-black/20 supports-[backdrop-filter]:bg-black/10 supports-[backdrop-filter]:backdrop-blur-[4px]"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <motion.div
-        className={`fixed top-0 left-0 z-[101] flex h-full w-80 flex-col border-r border-white/[0.08] bg-black/20 p-6 backdrop-blur-lg transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        initial={{ x: "-100%" }}
+        animate={{ x: isOpen ? 0 : "-100%" }}
+        transition={{
+          duration: 0.3,
+          ease: [0.32, 0.72, 0, 1],
+          type: "spring",
+          stiffness: 400,
+          damping: 30,
+        }}
+        style={{
+          willChange: "transform",
+          translateZ: 0,
+          backfaceVisibility: "hidden",
+        }}
+        className="fixed top-0 left-0 z-[101] flex h-full w-80 flex-col border-r border-white/[0.08] bg-black/20 p-6 supports-[backdrop-filter]:bg-black/10 supports-[backdrop-filter]:backdrop-blur-lg"
       >
         <div className="mb-8 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-white">Settings</h2>

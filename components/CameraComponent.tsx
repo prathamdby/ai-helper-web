@@ -253,7 +253,16 @@ export default function CameraComponent({
       className="bg-muted relative mx-auto mb-6 aspect-video w-full overflow-hidden rounded-lg lg:w-3/5"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: 0.1 }}
+      transition={{
+        duration: 0.3,
+        ease: [0.32, 0.72, 0, 1],
+        opacity: { duration: 0.2 },
+      }}
+      style={{
+        willChange: "transform, opacity",
+        translateZ: 0,
+        backfaceVisibility: "hidden",
+      }}
     >
       {error ? (
         <div className="bg-destructive/20 absolute inset-0 flex flex-col items-center justify-center">
@@ -295,7 +304,15 @@ export default function CameraComponent({
         className="absolute top-4 right-4 flex items-center gap-2"
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.2 }}
+        transition={{
+          duration: 0.3,
+          ease: [0.32, 0.72, 0, 1],
+          delay: 0.1,
+        }}
+        style={{
+          willChange: "transform, opacity",
+          translateZ: 0,
+        }}
       >
         <div
           className={`px-3 py-1.5 ${statusClass} flex items-center gap-2 rounded-md text-sm font-medium`}
@@ -311,7 +328,15 @@ export default function CameraComponent({
           className="absolute top-4 left-4"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{
+            duration: 0.3,
+            ease: [0.32, 0.72, 0, 1],
+            delay: 0.1,
+          }}
+          style={{
+            willChange: "transform, opacity",
+            translateZ: 0,
+          }}
         >
           <Card className="bg-background/80 p-3 backdrop-blur-sm">
             <div className="flex flex-col gap-2 text-xs">

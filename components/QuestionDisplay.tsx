@@ -149,7 +149,7 @@ export default function QuestionDisplay({
               return (
                 <div
                   key={index}
-                  className="hover:bg-accent/50 flex w-full items-start gap-2 rounded-md p-2 transition-colors"
+                  className="hover:bg-accent/50 flex w-full [transform:translate3d(0,0,0)] items-start gap-2 rounded-md p-2 transition-colors duration-200 [will-change:background-color]"
                 >
                   <Badge
                     variant="outline"
@@ -180,7 +180,7 @@ export default function QuestionDisplay({
             variant="ghost"
             size="sm"
             onClick={() => copyToClipboard(question || ocrText)}
-            className="h-8"
+            className="h-8 [transform:translate3d(0,0,0)] transition-transform duration-150 active:scale-95"
           >
             {copied ? (
               <Check className="mr-1 h-4 w-4" />
