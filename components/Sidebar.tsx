@@ -1,6 +1,7 @@
 "use client";
 
-import { Menu, X, Trash2 } from "lucide-react";
+import { Menu, X, Trash2, ExternalLink } from "lucide-react";
+import Link from "next/link";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -121,9 +122,20 @@ export function Sidebar() {
             <h3 className="font-medium text-white/90">API Keys</h3>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="openrouter" className="text-white/70">
-                  OpenRouter API Key
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="openrouter" className="text-white/70">
+                    OpenRouter API Key
+                  </Label>
+                  <Link
+                    href="https://openrouter.ai/keys"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-primary/10 text-primary hover:bg-primary/20 inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors"
+                  >
+                    Obtain the key
+                    <ExternalLink className="h-3 w-3" />
+                  </Link>
+                </div>
                 <Input
                   id="openrouter"
                   type="password"
