@@ -172,7 +172,7 @@ export function Sidebar() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="mb-4 border-white/10 bg-white/5 focus:border-white/20"
             />
-            <div className="scrollbar-thin scrollbar-thumb-white/50 scrollbar-track-white/10 max-h-[200px] space-y-2 overflow-y-auto pr-2">
+            <div className="scrollbar-thin scrollbar-thumb-white/50 scrollbar-track-white/10 content-visibility-auto max-h-[200px] space-y-2 overflow-y-auto pr-2">
               {loading ? (
                 <p className="text-white/70">Loading models...</p>
               ) : error ? (

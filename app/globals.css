@@ -153,6 +153,13 @@
   background-position: center center;
 }
 
+/* Custom utilities */
+@layer utilities {
+  .content-visibility-auto {
+    content-visibility: auto;
+  }
+}
+
 /* Dark mode grid pattern */
 .dark .bg-grid-pattern {
   background-image:
