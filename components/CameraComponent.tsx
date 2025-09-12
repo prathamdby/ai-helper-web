@@ -41,9 +41,9 @@ export default function CameraComponent({
 
       // Stop any existing stream
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => {
+        for (const track of streamRef.current.getTracks()) {
           track.stop();
-        });
+        }
         streamRef.current = null;
       }
 
@@ -76,13 +76,13 @@ export default function CameraComponent({
       try {
         // Stop any existing stream first
         if (streamRef.current) {
-          streamRef.current.getTracks().forEach((track) => {
+          for (const track of streamRef.current.getTracks()) {
             track.stop();
-          });
+          }
           streamRef.current = null;
         }
 
-        const stream = await navigator.mediaDevices.getUserMedia({
+        const newStream = await navigator.mediaDevices.getUserMedia({
           video: {
             facingMode: "environment",
             width: { ideal: 1280 },
@@ -92,13 +92,13 @@ export default function CameraComponent({
 
         // Only set state if component is still mounted
         if (mounted) {
-          streamRef.current = stream;
-          setStream(stream);
+          streamRef.current = newStream;
+          setStream(newStream);
         } else {
           // If unmounted, clean up the stream
-          stream.getTracks().forEach((track) => {
+          for (const track of newStream.getTracks()) {
             track.stop();
-          });
+          }
         }
       } catch (err: unknown) {
         if (mounted) {
@@ -135,7 +135,7 @@ export default function CameraComponent({
             console.log("Performing periodic camera refresh");
             getCameraStream();
           }
-        }, 30000); // 30 seconds
+        }, 30_000); // 30 seconds
       }
     }
 
@@ -150,9 +150,9 @@ export default function CameraComponent({
       }
 
       if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => {
+        for (const track of streamRef.current.getTracks()) {
           track.stop();
-        });
+        }
         streamRef.current = null;
       }
     };
@@ -235,12 +235,12 @@ export default function CameraComponent({
     } else if (isLoading) {
       statusText = "Processing...";
       statusClass = "bg-primary/20 text-primary";
-    } else if (!stream) {
-      statusText = "Initializing Camera";
-      statusClass = "bg-primary/10 text-primary/80";
-    } else {
+    } else if (stream) {
       statusText = "Ready";
       statusClass = "bg-primary/30 text-primary";
+    } else {
+      statusText = "Initializing Camera";
+      statusClass = "bg-primary/10 text-primary/80";
     }
 
     return { statusText, statusClass };
@@ -250,7 +250,7 @@ export default function CameraComponent({
 
   return (
     <motion.div
-      className="bg-muted relative mx-auto mb-6 aspect-video w-full overflow-hidden rounded-lg lg:w-3/5"
+      className="relative mx-auto mb-6 aspect-video w-full overflow-hidden rounded-lg bg-muted lg:w-3/5"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{
@@ -265,8 +265,8 @@ export default function CameraComponent({
       }}
     >
       {error ? (
-        <div className="bg-destructive/20 absolute inset-0 flex flex-col items-center justify-center">
-          <p className="text-destructive mb-3 text-sm">{error}</p>
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-destructive/20">
+          <p className="mb-3 text-destructive text-sm">{error}</p>
           <Button
             variant="outline"
             size="sm"
@@ -295,7 +295,7 @@ export default function CameraComponent({
         </>
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
-          <Camera className="text-muted-foreground h-16 w-16" />
+          <Camera className="h-16 w-16 text-muted-foreground" />
         </div>
       )}
 
@@ -315,7 +315,7 @@ export default function CameraComponent({
         }}
       >
         <div
-          className={`px-3 py-1.5 ${statusClass} flex items-center gap-2 rounded-md text-sm font-medium`}
+          className={`px-3 py-1.5 ${statusClass} flex items-center gap-2 rounded-md font-medium text-sm`}
         >
           {isLoading && <Loader2 className="h-3 w-3 animate-spin" />}
           {statusText}
@@ -340,14 +340,14 @@ export default function CameraComponent({
         >
           <Card className="bg-background/80 p-3 backdrop-blur-sm">
             <div className="flex flex-col gap-2 text-xs">
-              <div className="text-primary flex items-center gap-2">
+              <div className="flex items-center gap-2 text-primary">
                 <KeySquare className="h-4 w-4" />
                 <span>Controls:</span>
               </div>
-              <div className="text-muted-foreground flex items-center gap-2">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <Space className="h-3 w-3" /> Capture & Analyze
               </div>
-              <div className="text-muted-foreground flex items-center gap-2">
+              <div className="flex items-center gap-2 text-muted-foreground">
                 <X className="h-3 w-3" /> Clear Results
               </div>
             </div>

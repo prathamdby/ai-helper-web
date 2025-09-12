@@ -8,6 +8,18 @@
 const https = require("https");
 const url = process.argv[2] || "https://ai-helper-web.vercel.app";
 
+// Regex patterns for meta tag extraction
+const OG_TITLE_PATTERN = /<meta property="og:title" content="([^"]+)"/;
+const OG_DESCRIPTION_PATTERN = /<meta property="og:description" content="([^"]+)"/;
+const OG_IMAGE_PATTERN = /<meta property="og:image" content="([^"]+)"/;
+const OG_URL_PATTERN = /<meta property="og:url" content="([^"]+)"/;
+const OG_TYPE_PATTERN = /<meta property="og:type" content="([^"]+)"/;
+const OG_SITE_NAME_PATTERN = /<meta property="og:site_name" content="([^"]+)"/;
+const TWITTER_CARD_PATTERN = /<meta name="twitter:card" content="([^"]+)"/;
+const TWITTER_TITLE_PATTERN = /<meta name="twitter:title" content="([^"]+)"/;
+const TWITTER_DESCRIPTION_PATTERN = /<meta name="twitter:description" content="([^"]+)"/;
+const TWITTER_IMAGE_PATTERN = /<meta name="twitter:image" content="([^"]+)"/;
+
 if (!url) {
   console.error("Please provide a URL to check");
   process.exit(1);
@@ -26,28 +38,16 @@ https
     res.on("end", () => {
       // Check for OpenGraph tags
       const ogTags = {
-        "og:title": data.match(/<meta property="og:title" content="([^"]+)"/),
-        "og:description": data.match(
-          /<meta property="og:description" content="([^"]+)"/
-        ),
-        "og:image": data.match(/<meta property="og:image" content="([^"]+)"/),
-        "og:url": data.match(/<meta property="og:url" content="([^"]+)"/),
-        "og:type": data.match(/<meta property="og:type" content="([^"]+)"/),
-        "og:site_name": data.match(
-          /<meta property="og:site_name" content="([^"]+)"/
-        ),
-        "twitter:card": data.match(
-          /<meta name="twitter:card" content="([^"]+)"/
-        ),
-        "twitter:title": data.match(
-          /<meta name="twitter:title" content="([^"]+)"/
-        ),
-        "twitter:description": data.match(
-          /<meta name="twitter:description" content="([^"]+)"/
-        ),
-        "twitter:image": data.match(
-          /<meta name="twitter:image" content="([^"]+)"/
-        ),
+        "og:title": data.match(OG_TITLE_PATTERN),
+        "og:description": data.match(OG_DESCRIPTION_PATTERN),
+        "og:image": data.match(OG_IMAGE_PATTERN),
+        "og:url": data.match(OG_URL_PATTERN),
+        "og:type": data.match(OG_TYPE_PATTERN),
+        "og:site_name": data.match(OG_SITE_NAME_PATTERN),
+        "twitter:card": data.match(TWITTER_CARD_PATTERN),
+        "twitter:title": data.match(TWITTER_TITLE_PATTERN),
+        "twitter:description": data.match(TWITTER_DESCRIPTION_PATTERN),
+        "twitter:image": data.match(TWITTER_IMAGE_PATTERN),
       };
 
       console.log("\nOpenGraph Tags Found:");

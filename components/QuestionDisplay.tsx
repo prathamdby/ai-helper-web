@@ -34,7 +34,7 @@ export default function QuestionDisplay({
 
     if (question === "No question detected.") {
       return (
-        <div className="text-muted-foreground text-center italic">
+        <div className="text-center text-muted-foreground italic">
           No question detected in the image
         </div>
       );
@@ -52,12 +52,12 @@ export default function QuestionDisplay({
       questionText.includes("A ")
     ) {
       const optionStartIndex = Math.min(
-        questionText.indexOf("A)") >= 0 ? questionText.indexOf("A)") : Infinity,
-        questionText.indexOf("A.") >= 0 ? questionText.indexOf("A.") : Infinity,
-        questionText.indexOf("A ") >= 0 ? questionText.indexOf("A ") : Infinity
+        questionText.indexOf("A)") >= 0 ? questionText.indexOf("A)") : Number.POSITIVE_INFINITY,
+        questionText.indexOf("A.") >= 0 ? questionText.indexOf("A.") : Number.POSITIVE_INFINITY,
+        questionText.indexOf("A ") >= 0 ? questionText.indexOf("A ") : Number.POSITIVE_INFINITY
       );
 
-      if (optionStartIndex !== Infinity) {
+      if (optionStartIndex !== Number.POSITIVE_INFINITY) {
         optionLines.push(questionText.substring(optionStartIndex));
         questionText = questionText.substring(0, optionStartIndex).trim();
       }
@@ -84,17 +84,17 @@ export default function QuestionDisplay({
       ) {
         // Find the first option indicator
         const optionStartIndex = Math.min(
-          line.indexOf("A)") >= 0 ? line.indexOf("A)") : Infinity,
-          line.indexOf("A.") >= 0 ? line.indexOf("A.") : Infinity,
-          line.indexOf("B)") >= 0 ? line.indexOf("B)") : Infinity,
-          line.indexOf("B.") >= 0 ? line.indexOf("B.") : Infinity,
-          line.indexOf("C)") >= 0 ? line.indexOf("C)") : Infinity,
-          line.indexOf("C.") >= 0 ? line.indexOf("C.") : Infinity,
-          line.indexOf("D)") >= 0 ? line.indexOf("D)") : Infinity,
-          line.indexOf("D.") >= 0 ? line.indexOf("D.") : Infinity
+          line.indexOf("A)") >= 0 ? line.indexOf("A)") : Number.POSITIVE_INFINITY,
+          line.indexOf("A.") >= 0 ? line.indexOf("A.") : Number.POSITIVE_INFINITY,
+          line.indexOf("B)") >= 0 ? line.indexOf("B)") : Number.POSITIVE_INFINITY,
+          line.indexOf("B.") >= 0 ? line.indexOf("B.") : Number.POSITIVE_INFINITY,
+          line.indexOf("C)") >= 0 ? line.indexOf("C)") : Number.POSITIVE_INFINITY,
+          line.indexOf("C.") >= 0 ? line.indexOf("C.") : Number.POSITIVE_INFINITY,
+          line.indexOf("D)") >= 0 ? line.indexOf("D)") : Number.POSITIVE_INFINITY,
+          line.indexOf("D.") >= 0 ? line.indexOf("D.") : Number.POSITIVE_INFINITY
         );
 
-        if (optionStartIndex !== Infinity) {
+        if (optionStartIndex !== Number.POSITIVE_INFINITY) {
           return line.substring(optionStartIndex);
         }
       }
@@ -128,7 +128,7 @@ export default function QuestionDisplay({
 
     return (
       <div className="w-full space-y-4">
-        <div className="text-base leading-relaxed font-medium break-words">
+        <div className="break-words font-medium text-base leading-relaxed">
           {questionText}
         </div>
 
@@ -149,7 +149,7 @@ export default function QuestionDisplay({
               return (
                 <div
                   key={index}
-                  className="hover:bg-accent/50 flex w-full [transform:translate3d(0,0,0)] items-start gap-2 rounded-md p-2 transition-colors duration-200 [will-change:background-color]"
+                  className="flex w-full items-start gap-2 rounded-md p-2 transition-colors duration-200 [transform:translate3d(0,0,0)] [will-change:background-color] hover:bg-accent/50"
                 >
                   <Badge
                     variant="outline"
@@ -157,7 +157,7 @@ export default function QuestionDisplay({
                   >
                     {letter}
                   </Badge>
-                  <span className="text-sm break-words">{text}</span>
+                  <span className="break-words text-sm">{text}</span>
                 </div>
               );
             })}
@@ -171,7 +171,7 @@ export default function QuestionDisplay({
     <div className="w-full">
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2 font-medium">
-          <BookOpen className="text-primary h-5 w-5" />
+          <BookOpen className="h-5 w-5 text-primary" />
           <h3 className="text-lg text-white">Question</h3>
         </div>
 
@@ -180,7 +180,7 @@ export default function QuestionDisplay({
             variant="ghost"
             size="sm"
             onClick={() => copyToClipboard(question || ocrText)}
-            className="h-8 [transform:translate3d(0,0,0)] transition-transform duration-150 active:scale-95"
+            className="h-8 transition-transform duration-150 [transform:translate3d(0,0,0)] active:scale-95"
           >
             {copied ? (
               <Check className="mr-1 h-4 w-4" />
@@ -195,24 +195,24 @@ export default function QuestionDisplay({
       <Card className="overflow-hidden">
         <div className="min-h-[100px] p-4">
           {isLoading ? (
-            <div className="text-muted-foreground flex h-full flex-col items-center justify-center">
+            <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
               <Loader2 className="mb-2 h-8 w-8 animate-spin" />
               <p>Processing image...</p>
             </div>
           ) : question ? (
             <div className="w-full">{formatQuestionDisplay()}</div>
           ) : (
-            <div className="text-muted-foreground flex h-full items-center justify-center text-center">
+            <div className="flex h-full items-center justify-center text-center text-muted-foreground">
               {isSettingsConfigured ? (
                 <div className="flex flex-col items-center">
-                  <Camera className="text-muted-foreground/70 mb-2 h-8 w-8" />
+                  <Camera className="mb-2 h-8 w-8 text-muted-foreground/70" />
                   <p>
                     Point your camera at a question and press SPACE to analyze
                   </p>
                 </div>
               ) : (
                 <div className="flex flex-col items-center">
-                  <Sparkles className="text-muted-foreground/70 mb-2 h-8 w-8" />
+                  <Sparkles className="mb-2 h-8 w-8 text-muted-foreground/70" />
                   <p>
                     Click the settings icon in the top-right to configure API
                     keys and models

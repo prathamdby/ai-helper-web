@@ -115,10 +115,10 @@ export function Sidebar() {
           translateZ: 0,
           backfaceVisibility: "hidden",
         }}
-        className="fixed top-0 left-0 z-[101] flex h-full w-80 flex-col border-r border-white/[0.08] bg-black/20 p-6 supports-[backdrop-filter]:bg-black/10 supports-[backdrop-filter]:backdrop-blur-lg"
+        className="fixed top-0 left-0 z-[101] flex h-full w-80 flex-col border-white/[0.08] border-r bg-black/20 p-6 supports-[backdrop-filter]:bg-black/10 supports-[backdrop-filter]:backdrop-blur-lg"
       >
         <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-white">Settings</h2>
+          <h2 className="font-semibold text-white text-xl">Settings</h2>
           <Button
             variant="ghost"
             size="icon"
@@ -143,7 +143,7 @@ export function Sidebar() {
                     href="https://openrouter.ai/keys"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-primary/10 text-primary hover:bg-primary/20 inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors"
+                    className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 font-medium text-primary text-xs transition-colors hover:bg-primary/20"
                   >
                     Obtain the key
                     <ExternalLink className="h-3 w-3" />
@@ -172,7 +172,7 @@ export function Sidebar() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="mb-4 border-white/10 bg-white/5 focus:border-white/20"
             />
-            <div className="scrollbar-thin scrollbar-thumb-white/50 scrollbar-track-white/10 content-visibility-auto max-h-[200px] space-y-2 overflow-y-auto pr-2">
+            <div className="scrollbar-thin scrollbar-thumb-white/50 scrollbar-track-white/10 max-h-[200px] space-y-2 overflow-y-auto pr-2 content-visibility-auto">
               {loading ? (
                 <p className="text-white/70">Loading models...</p>
               ) : error ? (
@@ -225,7 +225,7 @@ export function Sidebar() {
                               });
                             }
                           }}
-                          className="accent-primary mr-3 h-4 w-4"
+                          className="mr-3 h-4 w-4 accent-primary"
                         />
                         <label
                           htmlFor={model}
@@ -242,11 +242,11 @@ export function Sidebar() {
         </div>
 
         {/* Clear settings button */}
-        <div className="mt-6 border-t border-white/10 pt-4">
+        <div className="mt-6 border-white/10 border-t pt-4">
           <Button
             onClick={handleClearSettings}
             variant="outline"
-            className="text-destructive hover:text-destructive border-destructive/20 hover:bg-destructive/10 h-10 w-full"
+            className="h-10 w-full border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive"
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Clear Settings

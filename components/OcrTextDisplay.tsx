@@ -24,7 +24,7 @@ export default function OcrTextDisplay({
           className="flex w-full cursor-pointer items-center justify-between outline-none"
         >
           <div className="flex items-center gap-2 font-medium">
-            <Camera className="text-primary h-5 w-5 flex-shrink-0" />
+            <Camera className="h-5 w-5 flex-shrink-0 text-primary" />
             <h3 className="text-lg text-white">OCR Text</h3>
           </div>
           <div
@@ -54,16 +54,16 @@ export default function OcrTextDisplay({
 
       {isOcrSectionOpen && (
         <Card className="mt-2 overflow-hidden">
-          <div className="min-h-[100px] p-4 font-mono text-sm break-words whitespace-pre-wrap">
+          <div className="min-h-[100px] whitespace-pre-wrap break-words p-4 font-mono text-sm">
             {isLoading ? (
-              <div className="text-muted-foreground flex h-full flex-col items-center justify-center">
+              <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
                 <Loader2 className="mb-2 h-8 w-8 animate-spin" />
                 <p>Processing image...</p>
               </div>
             ) : ocrText ? (
               ocrText
             ) : (
-              <div className="text-muted-foreground flex h-full items-center justify-center">
+              <div className="flex h-full items-center justify-center text-muted-foreground">
                 No OCR text available
               </div>
             )}

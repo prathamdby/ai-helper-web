@@ -27,10 +27,10 @@ export default function ModelResponsesDisplay({
     <div className="w-full">
       <div className="mb-2 flex items-center justify-between">
         <div className="flex items-center gap-2 font-medium">
-          <BrainCircuit className="text-primary h-5 w-5" />
+          <BrainCircuit className="h-5 w-5 text-primary" />
           <h3 className="text-lg text-white">AI Answers</h3>
           {modelResponses.some((m) => m.status === "Processing...") && (
-            <Loader2 className="text-primary ml-1 h-4 w-4 animate-spin" />
+            <Loader2 className="ml-1 h-4 w-4 animate-spin text-primary" />
           )}
         </div>
       </div>
@@ -38,7 +38,7 @@ export default function ModelResponsesDisplay({
       <Card className="overflow-hidden">
         <div className="min-h-[100px]">
           {isLoading ? (
-            <div className="text-muted-foreground flex h-[100px] flex-col items-center justify-center">
+            <div className="flex h-[100px] flex-col items-center justify-center text-muted-foreground">
               <Loader2 className="mb-2 h-8 w-8 animate-spin" />
               <p>Processing image...</p>
             </div>
@@ -87,7 +87,7 @@ export default function ModelResponsesDisplay({
                         <div className={statusColor}>{model.status}</div>
                       ) : (
                         <div className="flex items-center gap-2">
-                          <Badge className="text-lg font-bold">
+                          <Badge className="font-bold text-lg">
                             {model.status}
                           </Badge>
                           {model.timeTaken && (
@@ -103,15 +103,15 @@ export default function ModelResponsesDisplay({
               })}
             </div>
           ) : (
-            <div className="text-muted-foreground flex h-[100px] items-center justify-center">
+            <div className="flex h-[100px] items-center justify-center text-muted-foreground">
               {question ? (
                 <div className="flex flex-col items-center">
-                  <Loader2 className="text-muted-foreground/70 mb-2 h-8 w-8 animate-spin" />
+                  <Loader2 className="mb-2 h-8 w-8 animate-spin text-muted-foreground/70" />
                   <p>Waiting for AI responses...</p>
                 </div>
               ) : (
                 <div className="flex flex-col items-center">
-                  <BrainCircuit className="text-muted-foreground/70 mb-2 h-8 w-8" />
+                  <BrainCircuit className="mb-2 h-8 w-8 text-muted-foreground/70" />
                   <p>No model responses available</p>
                 </div>
               )}

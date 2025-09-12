@@ -1,11 +1,11 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 
-interface OpenGraphProps {
+type OpenGraphProps = {
   title?: string;
   description?: string;
   url?: string;
   image?: string;
-}
+};
 
 /**
  * Generates OpenGraph metadata for dynamic pages

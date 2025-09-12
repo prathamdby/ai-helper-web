@@ -56,7 +56,7 @@ async function getModelResponse(
         return cleanedAnswer;
       }
       return answer; // Return original if we can't clean it properly
-    } else {
+    }
       // For regular questions, capitalize first letter and ensure proper ending punctuation
       let formattedAnswer = answer.trim();
 
@@ -72,12 +72,11 @@ async function getModelResponse(
         /^\d+$/.test(formattedAnswer) ||
         formattedAnswer.split(/\s+/).length === 1;
 
-      if (!hasEndingPunctuation && !isNumberOrSingleWord) {
+      if (!(hasEndingPunctuation || isNumberOrSingleWord)) {
         formattedAnswer += ".";
       }
 
       return formattedAnswer;
-    }
   }
 
   let prompt = "";
@@ -116,7 +115,7 @@ Your response must be the shortest possible correct answer.`;
       const response = await axios.post(
         "https://openrouter.ai/api/v1/chat/completions",
         {
-          model: model,
+          model,
           messages: [
             {
               role: "system",
@@ -178,7 +177,7 @@ Just the direct answer and nothing else.`;
           const fixResponse = await axios.post(
             "https://openrouter.ai/api/v1/chat/completions",
             {
-              model: model,
+              model,
               messages: [
                 {
                   role: "system",

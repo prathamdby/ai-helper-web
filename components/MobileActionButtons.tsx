@@ -53,7 +53,7 @@ export default function MobileActionButtons({
         >
           {isLoading ? (
             <>
-              <Loader2 className="mr-3 -ml-1 h-5 w-5 animate-spin" />
+              <Loader2 className="-ml-1 mr-3 h-5 w-5 animate-spin" />
               Loading...
             </>
           ) : (

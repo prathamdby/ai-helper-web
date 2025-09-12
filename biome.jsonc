@@ -1,4 +1,58 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "extends": ["ultracite"]
+  "extends": ["ultracite"],
+  "css": {
+    "linter": {
+      "enabled": true
+    }
+  },
+  "linter": {
+    "rules": {
+      "suspicious": {
+        "noUnknownAtRules": "off",
+        "noConsole": "warn"
+      },
+      "performance": {
+        "noNamespaceImport": "off"
+      },
+      "style": {
+        "noMagicNumbers": "warn",
+        "useNodejsImportProtocol": "warn",
+        "useConsistentArrayType": "warn"
+      },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": "warn",
+        "useOptionalChain": "warn"
+      },
+      "nursery": {
+        "useConsistentTypeDefinitions": "warn"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["components/ui/**"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noNamespaceImport": "off"
+          },
+          "correctness": {
+            "noNestedComponentDefinitions": "off"
+          },
+          "a11y": {
+            "useFocusableInteractive": "off",
+            "useSemanticElements": "off"
+          },
+          "style": {
+            "noNestedTernary": "off",
+            "noMagicNumbers": "off"
+          },
+          "nursery": {
+            "noShadow": "off"
+          }
+        }
+      }
+    }
+  ]
 }

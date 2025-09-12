@@ -4,6 +4,10 @@ import axios from "axios";
 import useStore from "@/lib/store";
 import { getAllModelResponses } from "@/lib/model-responses";
 
+// Regex patterns for option detection
+const OPTION_PATTERN = /^[A-D](?:\.|\)|\s)/;
+const SAME_LINE_OPTION_PATTERN = /^[A-D](?:\.|\)|\s)/;
+
 interface CaptureLogicProps {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   videoRef: React.RefObject<HTMLVideoElement | null>;
@@ -27,7 +31,7 @@ export default function CaptureLogic({
     const canvas = canvasRef.current;
     const video = videoRef.current;
 
-    if (!canvas || !video) {
+    if (!(canvas && video)) {
       setError("Camera not available.");
       setLoading(false);
       return;
@@ -103,7 +107,9 @@ Return ONLY the formatted text without any additional explanation.`,
         }
       );
 
-      const choices = response.data.choices;
+      const choices = response.data.choices as Array<{
+        message: { content: string };
+      }>;
       if (!choices || choices.length === 0) {
         setOcrText("Error: No response from model");
         setLoading(false);
@@ -139,7 +145,7 @@ Return ONLY the formatted text without any additional explanation.`,
           isOptionsSection = true;
           // If the options are on the same line (e.g., "Options: A. Option")
           const optionOnSameLine = line.replace("Options:", "").trim();
-          if (optionOnSameLine.match(/^[A-D](?:\.|\)|\s)/)) {
+          if (optionOnSameLine.match(SAME_LINE_OPTION_PATTERN)) {
             options = optionOnSameLine;
           }
           continue;
@@ -147,7 +153,7 @@ Return ONLY the formatted text without any additional explanation.`,
 
         // Detect option lines in various formats
         if (
-          line.match(/^[A-D](?:\.|\)|\s)/) ||
+          line.match(OPTION_PATTERN) ||
           (isOptionsSection && line.length > 0)
         ) {
           if (options === "") {
