@@ -1,6 +1,6 @@
 "use client";
 
-import axios from "axios";
+import { createAiClient } from "@/lib/ai/client";
 import { getAllModelResponses } from "@/lib/model-responses";
 import useStore from "@/lib/store";
 
@@ -24,8 +24,6 @@ export default function CaptureLogic({
 
   const capture = async () => {
     setLoading(true);
-
-    // Clear any previous error
     setError(null);
 
     const canvas = canvasRef.current;
@@ -50,23 +48,18 @@ export default function CaptureLogic({
         return;
       }
 
-      // Draw the video frame to the canvas
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
       // Get the image data from the canvas
       const imageData = canvas.toDataURL("image/jpeg");
 
-      const response = await axios.post(
-        "https://openrouter.ai/api/v1/chat/completions",
-        {
-          model: "google/gemini-2.0-flash-exp:free",
-          messages: [
-            {
-              role: "user",
-              content: [
-                {
-                  type: "text",
-                  text: `Extract text from this image with high accuracy:
+      const ai = createAiClient({
+        appTitle: "ai-helper-web",
+        referer:
+          typeof window !== "undefined" ? window.location.origin : undefined,
+      });
+
+      const prompt = `Extract text from this image with high accuracy:
 
 If it's a multiple choice question, format EXACTLY as:
 Question: <full question text>
@@ -87,36 +80,22 @@ Important instructions:
 6. ONLY return a Question: line if you detect an actual question in the image
 7. If no question is detected, return empty string
 
-Return ONLY the formatted text without any additional explanation.`,
-                },
-                {
-                  type: "image_url",
-                  image_url: {
-                    url: imageData,
-                  },
-                },
-              ],
-            },
-          ],
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${settings.openrouterKey}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+Return ONLY the formatted text without any additional explanation.`;
 
-      const choices = response.data.choices as Array<{
-        message: { content: string };
-      }>;
-      if (!choices || choices.length === 0) {
+      const ocrText = await ai.extractTextFromImage({
+        apiKey: settings.openrouterKey,
+        model: "google/gemini-2.0-flash-exp:free",
+        imageData,
+        prompt,
+      });
+
+      if (!ocrText) {
         setOcrText("Error: No response from model");
         setLoading(false);
         return;
       }
 
-      const detectedText = choices[0].message.content.trim();
+      const detectedText = ocrText.trim();
       setOcrText(detectedText);
 
       let question = "";
@@ -164,15 +143,14 @@ Return ONLY the formatted text without any additional explanation.`,
         }
       }
 
-      console.log("Parsed question:", question);
-      console.log("Parsed options:", options);
-
       if (question) {
-        setQuestion(options ? `${question}\n${options}` : question);
+        const fullQuestion = options ? `${question}\n${options}` : question;
+        setQuestion(fullQuestion);
         getAllModelResponses(question, options);
       } else {
         setQuestion("No question detected.");
       }
+
       setLoading(false);
     } catch (error: unknown) {
       if (error instanceof Error) {

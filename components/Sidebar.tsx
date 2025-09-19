@@ -1,6 +1,6 @@
 "use client";
 
-import axios from "axios";
+import { createAiClient } from "@/lib/ai/client";
 import { motion } from "framer-motion";
 import { ExternalLink, Menu, Trash2, X } from "lucide-react";
 import Link from "next/link";
@@ -42,14 +42,21 @@ export function Sidebar() {
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const response = await axios.get("https://openrouter.ai/api/v1/models");
-        const freeModels = response.data.data.filter(
-          (model: {
-            pricing: { prompt: string; completion: string };
-            id: string;
-          }) => model.pricing.prompt === "0" && model.pricing.completion === "0"
+        const ai = createAiClient({
+          appTitle: "ai-helper-web",
+          referer:
+            typeof window !== "undefined" ? window.location.origin : undefined,
+        });
+        const models = await ai.listModels();
+        // OpenRouter exposes pricing; when using base OpenAI this may be absent
+        const freeModels = models.filter(
+          (model: any) =>
+            model?.pricing?.prompt === "0" && model?.pricing?.completion === "0"
         );
-        setAvailableModels(freeModels.map((model: { id: string }) => model.id));
+        const ids = (freeModels.length > 0 ? freeModels : models)
+          .map((m: any) => m.id)
+          .filter((id: unknown): id is string => typeof id === "string");
+        setAvailableModels(ids);
       } catch (error: unknown) {
         setError(error instanceof Error ? error.message : "An error occurred");
       } finally {

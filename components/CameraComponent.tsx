@@ -172,7 +172,6 @@ export default function CameraComponent({
 
       // Handle stalled or frozen video
       const handleVideoStalled = () => {
-        console.log("Video playback stalled, attempting recovery");
         if (currentVideoRef) {
           // Try to recover by restarting playback
           currentVideoRef.pause();
