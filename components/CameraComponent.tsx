@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Space, Camera, X, KeySquare, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { Camera, KeySquare, Loader2, Space, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 interface CameraComponentProps {
   isMobile: boolean;
@@ -250,28 +250,28 @@ export default function CameraComponent({
 
   return (
     <motion.div
+      animate={{ opacity: 1, scale: 1 }}
       className="relative mx-auto mb-6 aspect-video w-full overflow-hidden rounded-lg bg-muted lg:w-3/5"
       initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{
-        duration: 0.3,
-        ease: [0.32, 0.72, 0, 1],
-        opacity: { duration: 0.2 },
-      }}
       style={{
         willChange: "transform, opacity",
         translateZ: 0,
         backfaceVisibility: "hidden",
+      }}
+      transition={{
+        duration: 0.3,
+        ease: [0.32, 0.72, 0, 1],
+        opacity: { duration: 0.2 },
       }}
     >
       {error ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-destructive/20">
           <p className="mb-3 text-destructive text-sm">{error}</p>
           <Button
-            variant="outline"
-            size="sm"
-            onClick={restartVideoStream}
             className="bg-background/80"
+            onClick={restartVideoStream}
+            size="sm"
+            variant="outline"
           >
             Restart Camera
           </Button>
@@ -279,11 +279,11 @@ export default function CameraComponent({
       ) : stream ? (
         <>
           <video
-            ref={videoRef}
             autoPlay
-            playsInline
-            muted
             className="h-full w-full object-cover"
+            muted
+            playsInline
+            ref={videoRef}
             style={{
               transform: "translateZ(0)", // Hardware acceleration hint
               backfaceVisibility: "hidden", // Reduce composite layers
@@ -291,7 +291,7 @@ export default function CameraComponent({
             }}
           />
           {/* Hidden canvas for image capture */}
-          <canvas ref={canvasRef} className="hidden" />
+          <canvas className="hidden" ref={canvasRef} />
         </>
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
@@ -301,17 +301,17 @@ export default function CameraComponent({
 
       {/* Status Overlay */}
       <motion.div
+        animate={{ opacity: 1, x: 0 }}
         className="absolute top-4 right-4 flex items-center gap-2"
         initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
+        style={{
+          willChange: "transform, opacity",
+          translateZ: 0,
+        }}
         transition={{
           duration: 0.3,
           ease: [0.32, 0.72, 0, 1],
           delay: 0.1,
-        }}
-        style={{
-          willChange: "transform, opacity",
-          translateZ: 0,
         }}
       >
         <div
@@ -325,17 +325,17 @@ export default function CameraComponent({
       {/* Controls - Only show on desktop */}
       {!isMobile && (
         <motion.div
+          animate={{ opacity: 1, x: 0 }}
           className="absolute top-4 left-4"
           initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
+          style={{
+            willChange: "transform, opacity",
+            translateZ: 0,
+          }}
           transition={{
             duration: 0.3,
             ease: [0.32, 0.72, 0, 1],
             delay: 0.1,
-          }}
-          style={{
-            willChange: "transform, opacity",
-            translateZ: 0,
           }}
         >
           <Card className="bg-background/80 p-3 backdrop-blur-sm">

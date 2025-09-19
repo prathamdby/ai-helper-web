@@ -10,14 +10,16 @@ const url = process.argv[2] || "https://ai-helper-web.vercel.app";
 
 // Regex patterns for meta tag extraction
 const OG_TITLE_PATTERN = /<meta property="og:title" content="([^"]+)"/;
-const OG_DESCRIPTION_PATTERN = /<meta property="og:description" content="([^"]+)"/;
+const OG_DESCRIPTION_PATTERN =
+  /<meta property="og:description" content="([^"]+)"/;
 const OG_IMAGE_PATTERN = /<meta property="og:image" content="([^"]+)"/;
 const OG_URL_PATTERN = /<meta property="og:url" content="([^"]+)"/;
 const OG_TYPE_PATTERN = /<meta property="og:type" content="([^"]+)"/;
 const OG_SITE_NAME_PATTERN = /<meta property="og:site_name" content="([^"]+)"/;
 const TWITTER_CARD_PATTERN = /<meta name="twitter:card" content="([^"]+)"/;
 const TWITTER_TITLE_PATTERN = /<meta name="twitter:title" content="([^"]+)"/;
-const TWITTER_DESCRIPTION_PATTERN = /<meta name="twitter:description" content="([^"]+)"/;
+const TWITTER_DESCRIPTION_PATTERN =
+  /<meta name="twitter:description" content="([^"]+)"/;
 const TWITTER_IMAGE_PATTERN = /<meta name="twitter:image" content="([^"]+)"/;
 
 if (!url) {

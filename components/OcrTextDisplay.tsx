@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { Camera, Loader2 } from "lucide-react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 
 interface OcrTextDisplayProps {
@@ -20,8 +20,8 @@ export default function OcrTextDisplay({
     <div className="w-full">
       <div className="mb-2">
         <button
-          onClick={() => setIsOcrSectionOpen(!isOcrSectionOpen)}
           className="flex w-full cursor-pointer items-center justify-between outline-none"
+          onClick={() => setIsOcrSectionOpen(!isOcrSectionOpen)}
         >
           <div className="flex items-center gap-2 font-medium">
             <Camera className="h-5 w-5 flex-shrink-0 text-primary" />
@@ -33,19 +33,19 @@ export default function OcrTextDisplay({
             }`}
           >
             <svg
-              width="16"
+              className="flex-shrink-0"
+              fill="none"
               height="16"
               viewBox="0 0 16 16"
-              fill="none"
+              width="16"
               xmlns="http://www.w3.org/2000/svg"
-              className="flex-shrink-0"
             >
               <path
                 d="M4 6L8 10L12 6"
                 stroke="currentColor"
-                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                strokeWidth="2"
               />
             </svg>
           </div>

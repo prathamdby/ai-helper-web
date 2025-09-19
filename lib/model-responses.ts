@@ -1,5 +1,5 @@
-import useStore from "./store";
 import axios from "axios";
+import useStore from "./store";
 
 interface ModelResponse {
   name: string;
@@ -57,26 +57,26 @@ async function getModelResponse(
       }
       return answer; // Return original if we can't clean it properly
     }
-      // For regular questions, capitalize first letter and ensure proper ending punctuation
-      let formattedAnswer = answer.trim();
+    // For regular questions, capitalize first letter and ensure proper ending punctuation
+    let formattedAnswer = answer.trim();
 
-      // Capitalize first letter if it's not already
-      if (formattedAnswer.length > 0 && /[a-z]/.test(formattedAnswer[0])) {
-        formattedAnswer =
-          formattedAnswer[0].toUpperCase() + formattedAnswer.slice(1);
-      }
+    // Capitalize first letter if it's not already
+    if (formattedAnswer.length > 0 && /[a-z]/.test(formattedAnswer[0])) {
+      formattedAnswer =
+        formattedAnswer[0].toUpperCase() + formattedAnswer.slice(1);
+    }
 
-      // Add period at the end if there's no ending punctuation and it's not a number or single word
-      const hasEndingPunctuation = /[.!?]$/.test(formattedAnswer);
-      const isNumberOrSingleWord =
-        /^\d+$/.test(formattedAnswer) ||
-        formattedAnswer.split(/\s+/).length === 1;
+    // Add period at the end if there's no ending punctuation and it's not a number or single word
+    const hasEndingPunctuation = /[.!?]$/.test(formattedAnswer);
+    const isNumberOrSingleWord =
+      /^\d+$/.test(formattedAnswer) ||
+      formattedAnswer.split(/\s+/).length === 1;
 
-      if (!(hasEndingPunctuation || isNumberOrSingleWord)) {
-        formattedAnswer += ".";
-      }
+    if (!(hasEndingPunctuation || isNumberOrSingleWord)) {
+      formattedAnswer += ".";
+    }
 
-      return formattedAnswer;
+    return formattedAnswer;
   }
 
   let prompt = "";

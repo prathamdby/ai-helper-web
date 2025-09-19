@@ -7,9 +7,7 @@ const nextConfig: NextConfig = {
     // Disable ESLint during production builds
     ignoreDuringBuilds: true,
   },
-  experimental: {
-    turbo: {},
-  },
+  turbopack: {},
 };
 
 export default withPWA({
