@@ -1,8 +1,8 @@
 "use client";
 
 import axios from "axios";
-import useStore from "@/lib/store";
 import { getAllModelResponses } from "@/lib/model-responses";
+import useStore from "@/lib/store";
 
 // Regex patterns for option detection
 const OPTION_PATTERN = /^[A-D](?:\.|\)|\s)/;

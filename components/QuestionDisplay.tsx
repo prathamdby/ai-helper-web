@@ -1,10 +1,10 @@
 "use client";
 
+import { BookOpen, Camera, Check, Copy, Loader2, Sparkles } from "lucide-react";
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { BookOpen, Copy, Check, Loader2, Camera, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 interface QuestionDisplayProps {
   question: string;
@@ -52,9 +52,15 @@ export default function QuestionDisplay({
       questionText.includes("A ")
     ) {
       const optionStartIndex = Math.min(
-        questionText.indexOf("A)") >= 0 ? questionText.indexOf("A)") : Number.POSITIVE_INFINITY,
-        questionText.indexOf("A.") >= 0 ? questionText.indexOf("A.") : Number.POSITIVE_INFINITY,
-        questionText.indexOf("A ") >= 0 ? questionText.indexOf("A ") : Number.POSITIVE_INFINITY
+        questionText.indexOf("A)") >= 0
+          ? questionText.indexOf("A)")
+          : Number.POSITIVE_INFINITY,
+        questionText.indexOf("A.") >= 0
+          ? questionText.indexOf("A.")
+          : Number.POSITIVE_INFINITY,
+        questionText.indexOf("A ") >= 0
+          ? questionText.indexOf("A ")
+          : Number.POSITIVE_INFINITY
       );
 
       if (optionStartIndex !== Number.POSITIVE_INFINITY) {
@@ -84,14 +90,30 @@ export default function QuestionDisplay({
       ) {
         // Find the first option indicator
         const optionStartIndex = Math.min(
-          line.indexOf("A)") >= 0 ? line.indexOf("A)") : Number.POSITIVE_INFINITY,
-          line.indexOf("A.") >= 0 ? line.indexOf("A.") : Number.POSITIVE_INFINITY,
-          line.indexOf("B)") >= 0 ? line.indexOf("B)") : Number.POSITIVE_INFINITY,
-          line.indexOf("B.") >= 0 ? line.indexOf("B.") : Number.POSITIVE_INFINITY,
-          line.indexOf("C)") >= 0 ? line.indexOf("C)") : Number.POSITIVE_INFINITY,
-          line.indexOf("C.") >= 0 ? line.indexOf("C.") : Number.POSITIVE_INFINITY,
-          line.indexOf("D)") >= 0 ? line.indexOf("D)") : Number.POSITIVE_INFINITY,
-          line.indexOf("D.") >= 0 ? line.indexOf("D.") : Number.POSITIVE_INFINITY
+          line.indexOf("A)") >= 0
+            ? line.indexOf("A)")
+            : Number.POSITIVE_INFINITY,
+          line.indexOf("A.") >= 0
+            ? line.indexOf("A.")
+            : Number.POSITIVE_INFINITY,
+          line.indexOf("B)") >= 0
+            ? line.indexOf("B)")
+            : Number.POSITIVE_INFINITY,
+          line.indexOf("B.") >= 0
+            ? line.indexOf("B.")
+            : Number.POSITIVE_INFINITY,
+          line.indexOf("C)") >= 0
+            ? line.indexOf("C)")
+            : Number.POSITIVE_INFINITY,
+          line.indexOf("C.") >= 0
+            ? line.indexOf("C.")
+            : Number.POSITIVE_INFINITY,
+          line.indexOf("D)") >= 0
+            ? line.indexOf("D)")
+            : Number.POSITIVE_INFINITY,
+          line.indexOf("D.") >= 0
+            ? line.indexOf("D.")
+            : Number.POSITIVE_INFINITY
         );
 
         if (optionStartIndex !== Number.POSITIVE_INFINITY) {
@@ -139,7 +161,7 @@ export default function QuestionDisplay({
               const optionMatch = option.match(/^([A-D])(?:\.|\)|)\s*(.+)$/);
               if (!optionMatch)
                 return (
-                  <div key={index} className="text-sm">
+                  <div className="text-sm" key={index}>
                     {option}
                   </div>
                 );
@@ -148,12 +170,12 @@ export default function QuestionDisplay({
 
               return (
                 <div
-                  key={index}
                   className="flex w-full items-start gap-2 rounded-md p-2 transition-colors duration-200 [transform:translate3d(0,0,0)] [will-change:background-color] hover:bg-accent/50"
+                  key={index}
                 >
                   <Badge
-                    variant="outline"
                     className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center p-0"
+                    variant="outline"
                   >
                     {letter}
                   </Badge>
@@ -177,10 +199,10 @@ export default function QuestionDisplay({
 
         {(question || ocrText) && (
           <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => copyToClipboard(question || ocrText)}
             className="h-8 transition-transform duration-150 [transform:translate3d(0,0,0)] active:scale-95"
+            onClick={() => copyToClipboard(question || ocrText)}
+            size="sm"
+            variant="ghost"
           >
             {copied ? (
               <Check className="mr-1 h-4 w-4" />

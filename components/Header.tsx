@@ -1,7 +1,7 @@
 "use client";
 
-import { Brain } from "lucide-react";
 import { motion } from "framer-motion";
+import { Brain } from "lucide-react";
 
 export const Header = () => {
   return (
@@ -12,19 +12,19 @@ export const Header = () => {
       </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{
-          duration: 0.5,
-          ease: [0.32, 0.72, 0, 1],
-          opacity: { duration: 0.3 },
-        }}
+        className="mb-8 text-center"
+        initial={{ opacity: 0, y: 20 }}
         style={{
           willChange: "opacity, transform",
           translateZ: 0,
           backfaceVisibility: "hidden",
         }}
-        className="mb-8 text-center"
+        transition={{
+          duration: 0.5,
+          ease: [0.32, 0.72, 0, 1],
+          opacity: { duration: 0.3 },
+        }}
       >
         <h1 className="mb-2 font-black text-4xl text-white leading-tight tracking-tight sm:text-5xl md:text-6xl lg:mb-4 lg:text-[72px] lg:leading-[1.15]">
           Instant Question Analysis

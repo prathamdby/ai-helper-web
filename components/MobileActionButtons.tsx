@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { X, Space, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { Loader2, Space, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface MobileActionButtonsProps {
   isSettingsConfigured: boolean;
@@ -24,32 +24,32 @@ export default function MobileActionButtons({
   return (
     <div className="pointer-events-auto fixed inset-x-6 bottom-8 z-50 flex items-center justify-between gap-4">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
         className="w-full"
+        initial={{ opacity: 0, y: 20 }}
+        transition={{ delay: 0.3 }}
       >
         <Button
-          size="lg"
           className="relative w-full touch-manipulation select-none"
-          variant="outline"
           onClick={clear}
+          size="lg"
+          variant="outline"
         >
           <X className="mr-2 h-4 w-4" />
           Clear
         </Button>
       </motion.div>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
         className="w-full"
+        initial={{ opacity: 0, y: 20 }}
+        transition={{ delay: 0.4 }}
       >
         <Button
-          size="lg"
           className="relative w-full touch-manipulation select-none"
-          onClick={capture}
           disabled={isLoading}
+          onClick={capture}
+          size="lg"
         >
           {isLoading ? (
             <>

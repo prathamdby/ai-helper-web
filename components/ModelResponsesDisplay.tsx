@@ -2,8 +2,8 @@
 
 import { motion } from "framer-motion";
 import { BrainCircuit, Loader2 } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 interface ModelResponse {
@@ -62,13 +62,13 @@ export default function ModelResponsesDisplay({
 
                 return (
                   <motion.div
-                    key={index}
+                    animate={{ opacity: 1, y: 0 }}
                     className={cn(
                       "flex flex-col gap-2 p-4 sm:flex-row sm:items-center",
                       bgColor
                     )}
                     initial={{ opacity: 0, y: 5 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    key={index}
                     transition={{ delay: 0.1 * index }}
                   >
                     <div className="min-w-[120px] font-medium">

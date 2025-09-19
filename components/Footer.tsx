@@ -1,5 +1,5 @@
+import { Github, Linkedin, Twitter } from "lucide-react";
 import Link from "next/link";
-import { Github, Twitter, Linkedin } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -10,23 +10,23 @@ const Footer = () => {
         </p>
         <div className="flex items-center gap-4">
           <Link
+            className="text-white/40 transition-colors duration-200 [transform:translate3d(0,0,0)] [will-change:color] hover:text-white"
             href="https://github.com/prathamdby"
             target="_blank"
-            className="text-white/40 transition-colors duration-200 [transform:translate3d(0,0,0)] [will-change:color] hover:text-white"
           >
             <Github className="h-5 w-5" />
           </Link>
           <Link
+            className="text-white/40 transition-colors duration-200 [transform:translate3d(0,0,0)] [will-change:color] hover:text-white"
             href="https://twitter.com/prathamdby"
             target="_blank"
-            className="text-white/40 transition-colors duration-200 [transform:translate3d(0,0,0)] [will-change:color] hover:text-white"
           >
             <Twitter className="h-5 w-5" />
           </Link>
           <Link
+            className="text-white/40 transition-colors duration-200 [transform:translate3d(0,0,0)] [will-change:color] hover:text-white"
             href="https://linkedin.com/in/prathamdby"
             target="_blank"
-            className="text-white/40 transition-colors duration-200 [transform:translate3d(0,0,0)] [will-change:color] hover:text-white"
           >
             <Linkedin className="h-5 w-5" />
           </Link>
