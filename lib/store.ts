@@ -1,8 +1,11 @@
 import { create } from "zustand";
 
+export type AiProvider = "openrouter" | "gemini";
+
 interface Settings {
   openrouterKey: string;
   selectedModels: string[];
+  provider: AiProvider;
 }
 
 interface ModelResponse {
@@ -29,6 +32,7 @@ const useStore = create<AppState>((set) => ({
   settings: {
     openrouterKey: "",
     selectedModels: [],
+    provider: "openrouter",
   },
   modelResponses: [],
   isSettingsConfigured: false,

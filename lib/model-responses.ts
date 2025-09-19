@@ -1,4 +1,3 @@
-import { createAiClient } from "@/lib/ai/client";
 import useStore from "./store";
 
 interface ModelResponse {
@@ -16,9 +15,6 @@ async function getModelResponse(
 ): Promise<ModelResponse> {
   const { settings } = useStore.getState();
   const startTime = Date.now();
-  const ai = createAiClient({
-    appTitle: "ai-helper-web",
-  });
 
   function validateAnswer(answer: string, isMCQ: boolean): boolean {
     if (!answer) {
@@ -115,14 +111,26 @@ Your response must be the shortest possible correct answer.`;
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     try {
-      const answer = await ai.askModel({
-        apiKey: settings.openrouterKey,
-        model,
-        systemPrompt:
-          "You are an expert question-answering system designed to provide precise, accurate answers with absolute minimal verbosity. You follow instructions exactly and never include explanations or additional text beyond what was requested. Your goal is to provide the most accurate answer in the most concise format possible.\n\nFor mathematical questions: Provide the final numerical answer with appropriate units if applicable.\nFor scientific questions: Use proper scientific notation and terminology.\nFor factual questions: Provide the most widely accepted factual answer.\nFor historical questions: Provide accurate dates, names, and locations.\nFor definitional questions: Provide concise, accurate definitions.\n\nAlways prioritize accuracy over brevity, but aim for both.",
-        userPrompt: prompt,
-        temperature: 0.2,
+      const response = await fetch("/api/ai/ask-model", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          apiKey: settings.openrouterKey,
+          provider: settings.provider,
+          model,
+          systemPrompt:
+            "You are an expert question-answering system designed to provide precise, accurate answers with absolute minimal verbosity. You follow instructions exactly and never include explanations or additional text beyond what was requested. Your goal is to provide the most accurate answer in the most concise format possible.\n\nFor mathematical questions: Provide the final numerical answer with appropriate units if applicable.\nFor scientific questions: Use proper scientific notation and terminology.\nFor factual questions: Provide the most widely accepted factual answer.\nFor historical questions: Provide accurate dates, names, and locations.\nFor definitional questions: Provide concise, accurate definitions.\n\nAlways prioritize accuracy over brevity, but aim for both.",
+          userPrompt: prompt,
+          temperature: 0.2,
+        }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to get model response");
+      }
+
+      const { response: answer } = await response.json();
 
       if (!answer) {
         return {
@@ -161,28 +169,37 @@ Just the direct answer and nothing else.`;
           }
 
           // Send the follow-up prompt
-          const fixedAnswer = await ai.askModelFollowup({
-            apiKey: settings.openrouterKey,
-            model,
-            temperature: 0.1,
-            conversation: [
-              {
-                role: "system",
-                content:
-                  "You are an expert question-answering system that follows instructions exactly. Provide only the exact answer requested with no additional text.",
-              },
-              { role: "user", content: prompt },
-              { role: "assistant", content: answer },
-              { role: "user", content: fixPrompt },
-            ],
+          const followupResponse = await fetch("/api/ai/ask-followup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              apiKey: settings.openrouterKey,
+              provider: settings.provider,
+              model,
+              temperature: 0.1,
+              conversation: [
+                {
+                  role: "system",
+                  content:
+                    "You are an expert question-answering system that follows instructions exactly. Provide only the exact answer requested with no additional text.",
+                },
+                { role: "user", content: prompt },
+                { role: "assistant", content: answer },
+                { role: "user", content: fixPrompt },
+              ],
+            }),
           });
-          if (validateAnswer(fixedAnswer, !!options)) {
-            const timeTaken = (Date.now() - startTime) / 1000;
-            return {
-              name: model,
-              status: formatAnswer(fixedAnswer, !!options),
-              timeTaken,
-            };
+
+          if (followupResponse.ok) {
+            const { response: fixedAnswer } = await followupResponse.json();
+            if (validateAnswer(fixedAnswer, !!options)) {
+              const timeTaken = (Date.now() - startTime) / 1000;
+              return {
+                name: model,
+                status: formatAnswer(fixedAnswer, !!options),
+                timeTaken,
+              };
+            }
           }
         } catch (error) {
           // If the fix attempt fails, continue with the regular retry

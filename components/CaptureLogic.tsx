@@ -1,6 +1,5 @@
 "use client";
 
-import { createAiClient } from "@/lib/ai/client";
 import { getAllModelResponses } from "@/lib/model-responses";
 import useStore from "@/lib/store";
 
@@ -53,12 +52,6 @@ export default function CaptureLogic({
       // Get the image data from the canvas
       const imageData = canvas.toDataURL("image/jpeg");
 
-      const ai = createAiClient({
-        appTitle: "ai-helper-web",
-        referer:
-          typeof window !== "undefined" ? window.location.origin : undefined,
-      });
-
       const prompt = `Extract text from this image with high accuracy:
 
 If it's a multiple choice question, format EXACTLY as:
@@ -82,12 +75,27 @@ Important instructions:
 
 Return ONLY the formatted text without any additional explanation.`;
 
-      const ocrText = await ai.extractTextFromImage({
-        apiKey: settings.openrouterKey,
-        model: "google/gemini-2.0-flash-exp:free",
-        imageData,
-        prompt,
+      const response = await fetch("/api/ai/extract-text", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          apiKey: settings.openrouterKey,
+          provider: settings.provider,
+          model:
+            settings.provider === "openrouter"
+              ? "google/gemini-2.0-flash-exp:free"
+              : "gemini-2.0-flash",
+          imageData,
+          prompt,
+        }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to extract text");
+      }
+
+      const { text: ocrText } = await response.json();
 
       if (!ocrText) {
         setOcrText("Error: No response from model");

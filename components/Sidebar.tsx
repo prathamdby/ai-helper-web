@@ -1,6 +1,5 @@
 "use client";
 
-import { createAiClient } from "@/lib/ai/client";
 import { motion } from "framer-motion";
 import { ExternalLink, Menu, Trash2, X } from "lucide-react";
 import Link from "next/link";
@@ -23,7 +22,13 @@ export function Sidebar() {
   useEffect(() => {
     const savedSettings = localStorage.getItem(SETTINGS_KEY);
     if (savedSettings) {
-      setSettings(JSON.parse(savedSettings));
+      const parsed = JSON.parse(savedSettings);
+      // Ensure backward compatibility - add provider if missing
+      setSettings({
+        openrouterKey: parsed.openrouterKey || "",
+        selectedModels: parsed.selectedModels || [],
+        provider: parsed.provider || "openrouter",
+      });
     }
   }, [setSettings]);
 
@@ -41,31 +46,87 @@ export function Sidebar() {
 
   useEffect(() => {
     const fetchModels = async () => {
-      try {
-        const ai = createAiClient({
-          appTitle: "ai-helper-web",
-          referer:
-            typeof window !== "undefined" ? window.location.origin : undefined,
-        });
-        const models = await ai.listModels();
-        // OpenRouter exposes pricing; when using base OpenAI this may be absent
-        const freeModels = models.filter(
-          (model: any) =>
-            model?.pricing?.prompt === "0" && model?.pricing?.completion === "0"
+      // Handle Gemini provider with hardcoded models
+      if (settings.provider === "gemini") {
+        console.log("[Gemini] Loading hardcoded models list");
+        setLoading(true);
+        setError(null);
+
+        // Hardcoded Gemini models list - Stable, production-ready
+        const geminiModels = [
+          "gemini-2.5-pro",
+          "gemini-2.5-flash",
+          "gemini-2.5-flash-lite",
+          "gemini-2.0-flash",
+          "gemini-2.0-flash-lite",
+        ];
+
+        console.log(
+          `[Gemini] Loaded ${geminiModels.length} models:`,
+          geminiModels
         );
-        const ids = (freeModels.length > 0 ? freeModels : models)
+        setAvailableModels(geminiModels);
+        setLoading(false);
+        return;
+      }
+
+      // Handle OpenRouter provider with API call
+      if (
+        settings.provider === "openrouter" &&
+        !settings.openrouterKey.trim()
+      ) {
+        setAvailableModels([]);
+        setLoading(false);
+        setError(null);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch("/api/ai/list-models", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            apiKey: settings.openrouterKey,
+            provider: settings.provider,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to load models");
+        }
+
+        const { models } = await response.json();
+
+        // For OpenRouter, filter by free models if pricing is available
+        let filteredModels = models;
+        if (settings.provider === "openrouter") {
+          const freeModels = models.filter(
+            (model: any) =>
+              model?.pricing?.prompt === "0" &&
+              model?.pricing?.completion === "0"
+          );
+          filteredModels = freeModels.length > 0 ? freeModels : models;
+        }
+
+        const ids = filteredModels
           .map((m: any) => m.id)
           .filter((id: unknown): id is string => typeof id === "string");
         setAvailableModels(ids);
       } catch (error: unknown) {
-        setError(error instanceof Error ? error.message : "An error occurred");
+        setError(
+          error instanceof Error ? error.message : "Failed to load models"
+        );
       } finally {
         setLoading(false);
       }
     };
 
     fetchModels();
-  }, []);
+  }, [settings.provider, settings.openrouterKey]);
 
   useEffect(() => {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
@@ -76,6 +137,7 @@ export function Sidebar() {
     setSettings({
       openrouterKey: "",
       selectedModels: [],
+      provider: "openrouter",
     });
 
     // Clear from localStorage
@@ -137,18 +199,45 @@ export function Sidebar() {
         </div>
 
         <div className="flex-1 space-y-8 overflow-y-auto">
+          {/* Provider Selection */}
+          <div className="space-y-4">
+            <h3 className="font-medium text-white/90">AI Provider</h3>
+            <div className="space-y-2">
+              <Label className="text-white/70" htmlFor="provider">
+                Select Provider
+              </Label>
+              <select
+                className="w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white focus:border-white/20 focus:outline-none"
+                id="provider"
+                onChange={(e) => {
+                  setSettings({ ...settings, provider: e.target.value as any });
+                }}
+                value={settings.provider}
+              >
+                <option value="openrouter">OpenRouter</option>
+                <option value="gemini">Gemini API</option>
+              </select>
+            </div>
+          </div>
+
           {/* API Keys Section */}
           <div className="space-y-4">
             <h3 className="font-medium text-white/90">API Keys</h3>
             <div className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label className="text-white/70" htmlFor="openrouter">
-                    OpenRouter API Key
+                  <Label className="text-white/70" htmlFor="apikey">
+                    {settings.provider === "openrouter"
+                      ? "OpenRouter API Key"
+                      : "Gemini API Key"}
                   </Label>
                   <Link
                     className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 font-medium text-primary text-xs transition-colors hover:bg-primary/20"
-                    href="https://openrouter.ai/keys"
+                    href={
+                      settings.provider === "openrouter"
+                        ? "https://openrouter.ai/keys"
+                        : "https://aistudio.google.com/app/apikey"
+                    }
                     rel="noopener noreferrer"
                     target="_blank"
                   >
@@ -158,11 +247,11 @@ export function Sidebar() {
                 </div>
                 <Input
                   className="border-white/10 bg-white/5 focus:border-white/20"
-                  id="openrouter"
+                  id="apikey"
                   onChange={(e) => {
                     setSettings({ ...settings, openrouterKey: e.target.value });
                   }}
-                  placeholder="Enter your OpenRouter API key"
+                  placeholder={`Enter your ${settings.provider === "openrouter" ? "OpenRouter" : "Gemini"} API key`}
                   type="password"
                   value={settings.openrouterKey}
                 />
@@ -184,6 +273,11 @@ export function Sidebar() {
                 <p className="text-white/70">Loading models...</p>
               ) : error ? (
                 <p className="text-destructive">Error: {error}</p>
+              ) : settings.provider === "openrouter" &&
+                !settings.openrouterKey.trim() ? (
+                <p className="text-white/50">Enter an API key to load models</p>
+              ) : availableModels.length === 0 ? (
+                <p className="text-white/50">No models available</p>
               ) : (
                 availableModels
                   .filter((model) =>

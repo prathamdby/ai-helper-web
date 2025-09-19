@@ -1,11 +1,19 @@
 import OpenAI from "openai";
 import type { AiClient, AiClientOptions, AiTextMessage } from "./types";
+import type { AiProvider } from "@/lib/store";
 
-const DEFAULT_BASE_URL = "https://openrouter.ai/api/v1";
+const PROVIDER_URLS: Record<AiProvider, string> = {
+  openrouter: "https://openrouter.ai/api/v1",
+  gemini: "https://generativelanguage.googleapis.com/v1beta/openai",
+};
 
-export function createAiClient(options: AiClientOptions = {}): AiClient {
-  const baseURL = options.baseURL || DEFAULT_BASE_URL;
+export function createAiClient(
+  options: AiClientOptions & { provider?: AiProvider } = {}
+): AiClient {
+  const baseURL =
+    options.baseURL || PROVIDER_URLS[options.provider || "openrouter"];
   const allowBrowser = options.allowBrowser ?? true;
+  const provider = options.provider || "openrouter";
 
   function buildClient(apiKey: string): OpenAI {
     return new OpenAI({
@@ -32,6 +40,11 @@ export function createAiClient(options: AiClientOptions = {}): AiClient {
     const { apiKey, model, imageData, prompt } = args;
     const client = buildClient(apiKey);
     try {
+      if (provider === "gemini") {
+        console.log(
+          `[Gemini] Extracting text from image using model: ${model}`
+        );
+      }
       const res = await client.chat.completions.create({
         model,
         messages: [
@@ -45,6 +58,11 @@ export function createAiClient(options: AiClientOptions = {}): AiClient {
         ],
       });
       const text = res.choices?.[0]?.message?.content?.trim() ?? "";
+      if (provider === "gemini") {
+        console.log(
+          `[Gemini] Image text extraction completed, response length: ${text.length}`
+        );
+      }
       return text;
     } catch (error) {
       throw normalizeError(error);
@@ -61,6 +79,11 @@ export function createAiClient(options: AiClientOptions = {}): AiClient {
     const { apiKey, model, systemPrompt, userPrompt, temperature } = args;
     const client = buildClient(apiKey);
     try {
+      if (provider === "gemini") {
+        console.log(
+          `[Gemini] Asking model ${model} with temperature ${temperature || 0}`
+        );
+      }
       const messages: Array<{ role: "system" | "user"; content: string }> = [];
       if (systemPrompt)
         messages.push({ role: "system", content: systemPrompt });
@@ -71,7 +94,13 @@ export function createAiClient(options: AiClientOptions = {}): AiClient {
         temperature,
         messages,
       });
-      return res.choices?.[0]?.message?.content?.trim() ?? "";
+      const response = res.choices?.[0]?.message?.content?.trim() ?? "";
+      if (provider === "gemini") {
+        console.log(
+          `[Gemini] Model response received, length: ${response.length}`
+        );
+      }
+      return response;
     } catch (error) {
       throw normalizeError(error);
     }
@@ -86,6 +115,11 @@ export function createAiClient(options: AiClientOptions = {}): AiClient {
     const { apiKey, model, conversation, temperature } = args;
     const client = buildClient(apiKey);
     try {
+      if (provider === "gemini") {
+        console.log(
+          `[Gemini] Follow-up conversation with model ${model}, ${conversation.length} messages`
+        );
+      }
       const res = await client.chat.completions.create({
         model,
         temperature,
@@ -94,7 +128,13 @@ export function createAiClient(options: AiClientOptions = {}): AiClient {
           content: m.content,
         })),
       });
-      return res.choices?.[0]?.message?.content?.trim() ?? "";
+      const response = res.choices?.[0]?.message?.content?.trim() ?? "";
+      if (provider === "gemini") {
+        console.log(
+          `[Gemini] Follow-up response received, length: ${response.length}`
+        );
+      }
+      return response;
     } catch (error) {
       throw normalizeError(error);
     }
