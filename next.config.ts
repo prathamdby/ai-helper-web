@@ -3,10 +3,6 @@ import withPWA from "next-pwa";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  eslint: {
-    // Disable ESLint during production builds
-    ignoreDuringBuilds: true,
-  },
   turbopack: {},
 };
 
